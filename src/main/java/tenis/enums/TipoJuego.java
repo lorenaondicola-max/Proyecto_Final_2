@@ -1,5 +1,5 @@
 package tenis.enums;
 
-public enum TIpoJuego {
+public enum TipoJuego {
     SINGLES, DOBLES
 }
