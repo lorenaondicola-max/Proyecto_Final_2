@@ -37,7 +37,6 @@ public class Club {
             this.canchas = new ArrayList<>();
         }
 
-        // Métodos obligatorios según el UML
         public void agregarCancha(Cancha cancha) {
             this.canchas.add(cancha);
         }
