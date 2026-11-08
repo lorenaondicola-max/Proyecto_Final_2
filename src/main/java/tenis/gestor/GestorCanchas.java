@@ -38,14 +38,16 @@ public class GestorCanchas {
     }
 
     // Métodos para interactuar con la Base de Datos mediante el DAO
-    public void guardarEnBD(Cancha c) throws AccesoDatosException {
-        dao.insertar(c);
-        elementos.add(c); // Sincronizamos la memoria
+    public Cancha buscarEnBD(int id) throws AccesoDatosException, ElementoNoEncontradoException {
+        return dao.buscarPorId(id);
     }
 
     public List<Cancha> listarDesdeBD() throws AccesoDatosException {
-        this.elementos = dao.listarTodos(); // Carga los elementos de la BD a la memoria
-        return this.elementos;
+        return dao.listarTodos();
+    }
+
+    public void guardarEnBD(Cancha c) throws AccesoDatosException {
+        dao.insertar(c);
     }
 
     public void actualizarEnBD(Cancha c) throws AccesoDatosException, ElementoNoEncontradoException {
@@ -54,6 +56,5 @@ public class GestorCanchas {
 
     public void eliminarDeBD(int id) throws AccesoDatosException, ElementoNoEncontradoException {
         dao.eliminar(id);
-        elementos.removeIf(c -> c.getId() == id);
     }
 }
