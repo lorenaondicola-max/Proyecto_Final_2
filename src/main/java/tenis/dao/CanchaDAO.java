@@ -7,7 +7,6 @@ import tenis.excepciones.ElementoNoEncontradoException;
 import tenis.interfaces.DAO;
 import tenis.modelo.Cancha;
 import tenis.modelo.Club;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -108,9 +107,8 @@ public class CanchaDAO implements DAO<Cancha> {
         Superficie superficie = Superficie.valueOf(rs.getString("superficie"));
         boolean tieneLuz = rs.getBoolean("tiene_luz");
 
-        // Nota: El club asociado se puede obtener consultando a su vez al ClubDAO si es necesario,
-        // o pasando una instancia básica según el diseño de relaciones de tu base de datos.
-        Club club = null;
+        int clubId = rs.getInt("club_id");
+        Club club = new Club(clubId, null, null, null, null, null, null, null, 0, 0.0, null);
 
         return new Cancha(id, numero, superficie, tieneLuz, club);
     }
