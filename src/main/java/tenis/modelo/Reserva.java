@@ -47,14 +47,13 @@ public class Reserva implements Cancelable, Tarifable {
         long minutos = Duration.between(inicio, fin).toMinutes();
         double horas = minutos / 60.0;
 
-        // Validar parámetros para el cálculo de la tarifa horaria
-        boolean esPolvoLadrillo = (cancha.getSuperficie() == Superficie.POLVO_LADRILLO);
+        // Obtener los parámetros requeridos por la clase Tarifa
+        Superficie superficie = cancha.getSuperficie();
         boolean esHoraPico = club.comienzaEnHoraPico(inicio);
-        boolean esDobles = (tipoJuego == TipoJuego.DOBLES);
         boolean esSocio = jugador.isEsSocio();
 
-        // Obtener el precio por hora aplicando recargos y descuentos del club
-        double precioHora = tarifa.calcularPrecioHora(esPolvoLadrillo, esHoraPico, esDobles, esSocio);
+        // Llamada correcta a calcularPrecioHora con los tipos que espera Tarifa
+        double precioHora = tarifa.calcularPrecioHora(superficie, esHoraPico, tipoJuego, esSocio);
         double costoTurno = precioHora * horas;
 
         // Sumar el costo acumulado de todos los servicios extras asociados

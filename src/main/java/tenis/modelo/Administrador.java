@@ -1,10 +1,10 @@
 package tenis.modelo;
 
 import tenis.enums.Superficie;
-
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,16 +40,26 @@ public class Administrador extends Usuario {
 
     // Método para la creación de otros usuarios del sistema (Administradores, Recepcionistas o Jugadores)
     public Usuario crearUsuario(String tipoUsuario, int id, String nombre, String dni, LocalDate fechaNacimiento,
-                                String domicilio, String telefono, String email, String username, String passwordHash) {
+                                String domicilio, String telefono, String email, String username, String passwordHash, Jugador responsable) {
         switch (tipoUsuario.toLowerCase()) {
             case "administrador":
                 return new Administrador(id, nombre, dni, fechaNacimiento, domicilio, telefono, email, username, passwordHash);
             case "recepcionista":
-                // Nota: Asumiendo que el recepcionista requiere un club asignado posteriormente
                 return new Recepcionista(id, nombre, dni, fechaNacimiento, domicilio, telefono, email, username, passwordHash, null);
             case "jugador":
-                // Se inicializa por defecto como no socio y nivel por definir
-                return new Jugador(id, nombre, dni, fechaNacimiento, domicilio, telefono, email, username, passwordHash, false, null, null, null);
+                // Validar si es menor de edad (menos de 18 años)
+                int edad = Period.between(fechaNacimiento, LocalDate.now()).getYears();
+
+                if (edad < 18) {
+                    if (responsable == null) {
+                        throw new IllegalArgumentException("El jugador es menor de edad y requiere obligatoriamente un responsable asignado.");
+                    }
+                    // Utiliza el constructor de menores (10 parámetros, sin credenciales)
+                    return new Jugador(id, nombre, dni, fechaNacimiento, domicilio, telefono, email, false, null, null, responsable);
+                } else {
+                    // Utiliza el constructor de adultos (11 parámetros, con credenciales)
+                    return new Jugador(id, nombre, dni, fechaNacimiento, domicilio, telefono, email, username, passwordHash, false, null, null);
+                }
             default:
                 throw new IllegalArgumentException("Tipo de usuario desconocido: " + tipoUsuario);
         }
