@@ -20,6 +20,23 @@ public class Club {
         private Tarifa tarifa;
 
         // Constructor
+        public Club(String nombre, String direccion, LocalTime horaApertura, LocalTime horaCierre,
+                    LocalTime inicioHoraPico, LocalTime finHoraPico, ArrayList<DayOfWeek> diasAtencion,
+                    int horasCancelacion, double porcentajePenalizacion, Tarifa tarifa) {
+            this.id = 0; // Se autogenerará en la BD
+            this.nombre = nombre;
+            this.direccion = direccion;
+            this.horaApertura = horaApertura;
+            this.horaCierre = horaCierre;
+            this.inicioHoraPico = inicioHoraPico;
+            this.finHoraPico = finHoraPico;
+            this.diasAtencion = diasAtencion;
+            this.horasCancelacion = horasCancelacion;
+            this.porcentajePenalizacion = porcentajePenalizacion;
+            this.tarifa = tarifa;
+            this.canchas = new ArrayList<>();
+        }
+
         public Club(int id, String nombre, String direccion, LocalTime horaApertura, LocalTime horaCierre,
                     LocalTime inicioHoraPico, LocalTime finHoraPico, ArrayList<DayOfWeek> diasAtencion,
                     int horasCancelacion, double porcentajePenalizacion, Tarifa tarifa) {
