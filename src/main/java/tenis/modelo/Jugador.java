@@ -14,7 +14,8 @@ public class Jugador extends Usuario {
     private Jugador responsable; // Obligatorio si es menor de 18 años
     private ArrayList<Reserva> historial;
 
-    // Constructor para jugadores mayores de edad
+
+    // JUGADOR ADULTO CON ID (Leído de la BD)
     public Jugador(int id, String nombre, String dni, LocalDate fechaNacimiento,
                    String domicilio, String telefono, String email, String username,
                    String passwordHash, boolean esSocio, Nivel nivel, String categoria) {
@@ -27,11 +28,18 @@ public class Jugador extends Usuario {
         this.historial = new ArrayList<>();
     }
 
-    // Constructor para jugadores menores de edad (requieren un responsable mayor)
+    // JUGADOR ADULTO SIN ID (Nuevo en la app)
+    public Jugador(String nombre, String dni, LocalDate fechaNacimiento,
+                   String domicilio, String telefono, String email, String username,
+                   String passwordHash, boolean esSocio, Nivel nivel, String categoria) {
+        this(0, nombre, dni, fechaNacimiento, domicilio, telefono, email, username, passwordHash, esSocio, nivel, categoria);
+    }
+
+    // JUGADOR MENOR CON ID (Leído de la BD)
     public Jugador(int id, String nombre, String dni, LocalDate fechaNacimiento,
                    String domicilio, String telefono, String email,
                    boolean esSocio, Nivel nivel, String categoria, Jugador responsable) {
-        super(id, nombre, dni, fechaNacimiento, domicilio, telefono, email, null, null); // Menores sin credenciales
+        super(id, nombre, dni, fechaNacimiento, domicilio, telefono, email, null, null);
         this.esSocio = esSocio;
         this.nivel = nivel;
         this.categoria = categoria;
@@ -40,6 +48,13 @@ public class Jugador extends Usuario {
         this.historial = new ArrayList<>();
     }
 
+
+    // JUGADOR MENOR SIN ID (Nuevo en la app)
+    public Jugador(String nombre, String dni, LocalDate fechaNacimiento,
+                   String domicilio, String telefono, String email,
+                   boolean esSocio, Nivel nivel, String categoria, Jugador responsable) {
+        this(0, nombre, dni, fechaNacimiento, domicilio, telefono, email, esSocio, nivel, categoria, responsable);
+    }
     @Override
     public List<String> getPermisos() {
         if (this.esMenor()) {

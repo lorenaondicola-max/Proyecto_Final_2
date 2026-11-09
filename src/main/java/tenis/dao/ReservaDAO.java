@@ -18,8 +18,8 @@ import java.util.List;
 
 public class ReservaDAO implements DAO<Reserva> {
 
-    private static final String SQL_INSERTAR = "INSERT INTO reservas (id, cancha_id, jugador_id, titular_id, inicio, fin, tipo_juego, estado, cargo_cancelacion, asistio) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
+    private static final String SQL_INSERTAR = "INSERT INTO reservas (cancha_id, jugador_id, titular_id, inicio, fin, tipo_juego, estado, cargo_cancelacion, asistio) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_INSERTAR_EXTRA = "INSERT INTO reserva_extras (id, reserva_id, precio_unitario) VALUES (?, ?, ?)";
     private static final String SQL_ELIMINAR_EXTRAS = "DELETE FROM reserva_extras WHERE reserva_id = ?";
     private static final String SQL_LISTAR_EXTRAS = "SELECT id, precio_unitario FROM reserva_extras WHERE reserva_id = ?";
@@ -34,42 +34,50 @@ public class ReservaDAO implements DAO<Reserva> {
 
     @Override
     public void insertar(Reserva r) throws AccesoDatosException {
-        // Reserva principal
+
         try (Connection con = ConexionDB.getConexion();
-             PreparedStatement ps = con.prepareStatement(SQL_INSERTAR)) {
-            ps.setInt(1, r.getId());
-            ps.setInt(2, r.getCancha().getId());
-            ps.setInt(3, r.getJugador().getId());
+             PreparedStatement ps = con.prepareStatement(SQL_INSERTAR, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setInt(1, r.getCancha().getId());
+            ps.setInt(2, r.getJugador().getId());
 
             if (r.getTitular() != null) {
-                ps.setInt(4, r.getTitular().getId());
+                ps.setInt(3, r.getTitular().getId());
             } else {
-                ps.setNull(4, Types.INTEGER);
+                ps.setNull(3, Types.INTEGER);
             }
 
-            ps.setTimestamp(5, Timestamp.valueOf(r.getInicio()));
-            ps.setTimestamp(6, Timestamp.valueOf(r.getFin()));
-            ps.setString(7, r.getTipoJuego().name());
-            ps.setString(8, r.getEstado().name());
-            ps.setDouble(9, r.getCargoCancelacion());
-            ps.setBoolean(10, r.isAsistio());
+            ps.setTimestamp(4, Timestamp.valueOf(r.getInicio()));
+            ps.setTimestamp(5, Timestamp.valueOf(r.getFin()));
+            ps.setString(6, r.getTipoJuego().name());
+            ps.setString(7, r.getEstado().name());
+            ps.setDouble(8, r.getCargoCancelacion());
+            ps.setBoolean(9, r.isAsistio());
 
             ps.executeUpdate();
+
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    r.setId(rs.getInt(1));
+                }
+            }
+
         } catch (SQLException e) {
-            throw new AccesoDatosException("Error al insertar la reserva ID: " + r.getId(), e);
+            throw new AccesoDatosException("Error al insertar la reserva", e);
         }
 
-        // Extra
         if (r.getExtras() != null && !r.getExtras().isEmpty()) {
             for (Extra extra : r.getExtras()) {
                 try (Connection con = ConexionDB.getConexion();
                      PreparedStatement psExtra = con.prepareStatement(SQL_INSERTAR_EXTRA)) {
+
                     psExtra.setInt(1, extra.getId());
-                    psExtra.setInt(2, r.getId());
+                    psExtra.setInt(2, r.getId()); // 👈 Acá ahora usa el ID real de la reserva (ej: 1)
                     psExtra.setDouble(3, extra.getPrecioUnitario());
+
                     psExtra.executeUpdate();
                 } catch (SQLException e) {
-                    throw new AccesoDatosException("Error al insertar los extras de la reserva ID: " + r.getId(), e);
+                    throw new AccesoDatosException("Error al insertar los extras de la reserva", e);
                 }
             }
         }

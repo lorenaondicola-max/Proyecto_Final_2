@@ -15,7 +15,7 @@ public abstract class Usuario {
     protected String username;
     protected String passwordHash;
 
-    // Constructor
+    // Constructor CON ID (Para cuando se lee de la BD)
     public Usuario(int id, String nombre, String dni, LocalDate fechaNacimiento,
                    String domicilio, String telefono, String email, String username, String passwordHash) {
         this.id = id;
@@ -27,6 +27,12 @@ public abstract class Usuario {
         this.email = email;
         this.username = username;
         this.passwordHash = passwordHash;
+    }
+
+    // Constructor SIN ID (Para objetos nuevos creados en la app)
+    public Usuario(String nombre, String dni, LocalDate fechaNacimiento,
+                   String domicilio, String telefono, String email, String username, String passwordHash) {
+        this(0, nombre, dni, fechaNacimiento, domicilio, telefono, email, username, passwordHash);
     }
 
     // Método abstracto para que cada tipo de usuario defina sus permisos específicos

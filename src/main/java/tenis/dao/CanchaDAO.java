@@ -7,10 +7,8 @@ import tenis.excepciones.ElementoNoEncontradoException;
 import tenis.interfaces.DAO;
 import tenis.modelo.Cancha;
 import tenis.modelo.Club;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +16,7 @@ public class CanchaDAO implements DAO<Cancha> {
 
     private final ClubDAO clubDAO = new ClubDAO();
 
-    private static final String SQL_INSERTAR = "INSERT INTO canchas (id, numero, superficie, tiene_luz, club_id) VALUES (?, ?, ?, ?, ?)";
+    private static final String SQL_INSERTAR = "INSERT INTO canchas (numero, superficie, tiene_luz, club_id) VALUES (?, ?, ?, ?)";
     private static final String SQL_LISTAR = "SELECT * FROM canchas ORDER BY numero";
     private static final String SQL_BUSCAR = "SELECT * FROM canchas WHERE id = ?";
     private static final String SQL_ACTUALIZAR = "UPDATE canchas SET numero = ?, superficie = ?, tiene_luz = ?, club_id = ? WHERE id = ?";
@@ -26,16 +24,25 @@ public class CanchaDAO implements DAO<Cancha> {
 
     @Override
     public void insertar(Cancha c) throws AccesoDatosException {
+
         try (Connection con = ConexionDB.getConexion();
-             PreparedStatement ps = con.prepareStatement(SQL_INSERTAR)) {
-            ps.setInt(1, c.getId());
-            ps.setInt(2, c.getNumero());
-            ps.setString(3, c.getSuperficie().name());
-            ps.setBoolean(4, c.isTieneLuz());
-            ps.setInt(5, c.getClub().getId());
+             PreparedStatement ps = con.prepareStatement(SQL_INSERTAR, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setInt(1, c.getNumero());
+            ps.setString(2, c.getSuperficie().name());
+            ps.setBoolean(3, c.isTieneLuz());
+            ps.setInt(4, c.getClub().getId());
+
             ps.executeUpdate();
+
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    c.setId(rs.getInt(1));
+                }
+            }
+
         } catch (SQLException e) {
-            throw new AccesoDatosException("Error al insertar la cancha ID: " + c.getId(), e);
+            throw new AccesoDatosException("Error al insertar la cancha", e);
         }
     }
 

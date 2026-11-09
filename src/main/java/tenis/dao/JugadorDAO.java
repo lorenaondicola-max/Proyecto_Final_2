@@ -15,7 +15,7 @@ import java.util.List;
 
 public class JugadorDAO implements DAO<Jugador> {
 
-    private static final String SQL_INSERTAR = "INSERT INTO jugadores (id, nombre, dni, fecha_nacimiento, domicilio, telefono, email, username, password_hash, es_socio, nivel, categoria, responsable_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String SQL_INSERTAR = "INSERT INTO jugadores (nombre, dni, fecha_nacimiento, domicilio, telefono, email, username, password_hash, es_socio, nivel, categoria, responsable_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_LISTAR = "SELECT * FROM jugadores ORDER BY nombre";
     private static final String SQL_BUSCAR = "SELECT * FROM jugadores WHERE id = ?";
     private static final String SQL_ACTUALIZAR = "UPDATE jugadores SET nombre = ?, dni = ?, fecha_nacimiento = ?, domicilio = ?, telefono = ?, email = ?, username = ?, password_hash = ?, es_socio = ?, nivel = ?, categoria = ?, responsable_id = ? WHERE id = ?";
@@ -23,30 +23,38 @@ public class JugadorDAO implements DAO<Jugador> {
 
     @Override
     public void insertar(Jugador j) throws AccesoDatosException {
+
         try (Connection con = ConexionDB.getConexion();
-             PreparedStatement ps = con.prepareStatement(SQL_INSERTAR)) {
-            ps.setInt(1, j.getId());
-            ps.setString(2, j.getNombre());
-            ps.setString(3, j.getDni());
-            ps.setDate(4, Date.valueOf(j.getFechaNacimiento()));
-            ps.setString(5, j.getDomicilio());
-            ps.setString(6, j.getTelefono());
-            ps.setString(7, j.getEmail());
-            ps.setString(8, j.getUsername());
-            ps.setString(9, j.getPasswordHash());
-            ps.setBoolean(10, j.isEsSocio());
-            ps.setString(11, j.getNivel().name());
-            ps.setString(12, j.getCategoria());
+             PreparedStatement ps = con.prepareStatement(SQL_INSERTAR, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setString(1, j.getNombre());
+            ps.setString(2, j.getDni());
+            ps.setDate(3, Date.valueOf(j.getFechaNacimiento()));
+            ps.setString(4, j.getDomicilio());
+            ps.setString(5, j.getTelefono());
+            ps.setString(6, j.getEmail());
+            ps.setString(7, j.getUsername());
+            ps.setString(8, j.getPasswordHash());
+            ps.setBoolean(9, j.isEsSocio());
+            ps.setString(10, j.getNivel().name());
+            ps.setString(11, j.getCategoria());
 
             if (j.getResponsable() != null) {
-                ps.setInt(13, j.getResponsable().getId());
+                ps.setInt(12, j.getResponsable().getId());
             } else {
-                ps.setNull(13, Types.INTEGER);
+                ps.setNull(12, Types.INTEGER);
             }
 
             ps.executeUpdate();
+
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    j.setId(rs.getInt(1));
+                }
+            }
+
         } catch (SQLException e) {
-            throw new AccesoDatosException("Error al insertar el jugador ID: " + j.getId(), e);
+            throw new AccesoDatosException("Error al insertar el jugador", e);
         }
     }
 
