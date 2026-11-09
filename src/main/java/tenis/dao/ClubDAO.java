@@ -18,7 +18,7 @@ public class ClubDAO implements DAO<Club> {
     private static final String SQL_INSERTAR = "INSERT INTO club (nombre, direccion, hora_apertura, hora_cierre, inicio_hora_pico, fin_hora_pico, horas_cancelacion, porcentaje_penalizacion, precio_base_hora, recargo_polvo_porcentaje, recargo_pico_porcentaje, recargo_dobles_porcentaje, descuento_socio_porcentaje) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_LISTAR = "SELECT * FROM club";
     private static final String SQL_BUSCAR = "SELECT * FROM club WHERE id = ?";
-    private static final String SQL_ACTUALIZAR = "UPDATE club SET nombre = ?, direccion = ?, hora_apertura = ?, hora_cierre = ?, inicio_hora_pico = ?, fin_hora_pico = ?, horas_cancelacion = ?, porcentaje_penalizacion = ? WHERE id = ?";
+    private static final String SQL_ACTUALIZAR = "UPDATE club SET nombre = ?, direccion = ?, hora_apertura = ?, hora_cierre = ?, inicio_hora_pico = ?, fin_hora_pico = ?, horas_cancelacion = ?, porcentaje_penalizacion = ?, precio_base_hora = ?, recargo_polvo_porcentaje = ?, recargo_pico_porcentaje = ?, recargo_dobles_porcentaje = ?, descuento_socio_porcentaje = ? WHERE id = ?";
     private static final String SQL_ELIMINAR = "DELETE FROM club WHERE id = ?";
 
     @Override
