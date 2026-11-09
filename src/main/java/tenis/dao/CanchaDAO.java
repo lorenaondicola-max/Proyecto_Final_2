@@ -16,10 +16,12 @@ import java.util.List;
 
 public class CanchaDAO implements DAO<Cancha> {
 
+    private final ClubDAO clubDAO = new ClubDAO();
+
     private static final String SQL_INSERTAR = "INSERT INTO canchas (id, numero, superficie, tiene_luz, club_id) VALUES (?, ?, ?, ?, ?)";
     private static final String SQL_LISTAR = "SELECT * FROM canchas ORDER BY numero";
     private static final String SQL_BUSCAR = "SELECT * FROM canchas WHERE id = ?";
-    private static final String SQL_ACTUALIZAR = "UPDATE canchas SET numero = ?, superficie = ?, tiene_luz = ? WHERE id = ?";
+    private static final String SQL_ACTUALIZAR = "UPDATE canchas SET numero = ?, superficie = ?, tiene_luz = ?, club_id = ? WHERE id = ?";
     private static final String SQL_ELIMINAR = "DELETE FROM canchas WHERE id = ?";
 
     @Override
@@ -76,7 +78,8 @@ public class CanchaDAO implements DAO<Cancha> {
             ps.setInt(1, c.getNumero());
             ps.setString(2, c.getSuperficie().name());
             ps.setBoolean(3, c.isTieneLuz());
-            ps.setInt(4, c.getId());
+            ps.setInt(4, c.getClub().getId()); // <- Agregado
+            ps.setInt(5, c.getId());           // <- ID pasa a ser el parámetro 5
             filas = ps.executeUpdate();
         } catch (SQLException e) {
             throw new AccesoDatosException("Error al actualizar la cancha ID: " + c.getId(), e);
@@ -108,7 +111,12 @@ public class CanchaDAO implements DAO<Cancha> {
         boolean tieneLuz = rs.getBoolean("tiene_luz");
 
         int clubId = rs.getInt("club_id");
-        Club club = new Club(clubId, null, null, null, null, null, null, null, 0, 0.0, null);
+        Club club = null;
+        try {
+            club = clubDAO.buscarPorId(clubId);
+        } catch (AccesoDatosException | ElementoNoEncontradoException e) {
+            throw new SQLException("Error al asociar el Club en la cancha ID: " + id, e);
+        }
 
         return new Cancha(id, numero, superficie, tieneLuz, club);
     }

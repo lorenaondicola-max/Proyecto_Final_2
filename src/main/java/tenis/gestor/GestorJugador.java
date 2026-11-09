@@ -12,23 +12,19 @@ import java.util.List;
 
 public class GestorJugador {
 
-
-    private List<Jugador> elementos = new ArrayList<>();
     private final DAO<Jugador> dao = new JugadorDAO();
 
-
-    public Jugador buscar(int id) throws ElementoNoEncontradoException {
-        for (Jugador j : elementos) {
-            if (j.getId() == id) {
-                return j;
-            }
-        }
-        throw new ElementoNoEncontradoException("No se encontró al jugador con ID: " + id);
+    public Jugador buscar(int id) throws AccesoDatosException, ElementoNoEncontradoException {
+        return dao.buscarPorId(id);
     }
 
-    public List<Jugador> listarSocios() {
+    public List<Jugador> listarTodos() throws AccesoDatosException {
+        return dao.listarTodos();
+    }
+
+    public List<Jugador> listarSocios() throws AccesoDatosException {
         List<Jugador> socios = new ArrayList<>();
-        for (Jugador j : elementos) {
+        for (Jugador j : dao.listarTodos()) {
             if (j.isEsSocio()) {
                 socios.add(j);
             }
@@ -36,9 +32,9 @@ public class GestorJugador {
         return socios;
     }
 
-    public List<Jugador> listarPorNivel(Nivel nivel) {
+    public List<Jugador> listarPorNivel(Nivel nivel) throws AccesoDatosException {
         List<Jugador> resultado = new ArrayList<>();
-        for (Jugador j : elementos) {
+        for (Jugador j : dao.listarTodos()) {
             if (j.getNivel() == nivel) {
                 resultado.add(j);
             }
@@ -46,23 +42,15 @@ public class GestorJugador {
         return resultado;
     }
 
-    public Jugador buscarEnBD(int id) throws AccesoDatosException, ElementoNoEncontradoException {
-        return dao.buscarPorId(id);
-    }
-
-    public List<Jugador> listarDesdeBD() throws AccesoDatosException {
-        return dao.listarTodos();
-    }
-
-    public void guardarEnBD(Jugador j) throws AccesoDatosException {
+    public void guardar(Jugador j) throws AccesoDatosException {
         dao.insertar(j);
     }
 
-    public void actualizarEnBD(Jugador j) throws AccesoDatosException, ElementoNoEncontradoException {
+    public void actualizar(Jugador j) throws AccesoDatosException, ElementoNoEncontradoException {
         dao.actualizar(j);
     }
 
-    public void eliminarDeBD(int id) throws AccesoDatosException, ElementoNoEncontradoException {
+    public void eliminar(int id) throws AccesoDatosException, ElementoNoEncontradoException {
         dao.eliminar(id);
     }
 }

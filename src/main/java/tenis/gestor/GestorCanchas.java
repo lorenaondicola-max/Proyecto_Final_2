@@ -1,5 +1,6 @@
 package tenis.gestor;
 
+
 import tenis.dao.CanchaDAO;
 import tenis.enums.Superficie;
 import tenis.excepciones.AccesoDatosException;
@@ -12,23 +13,19 @@ import java.util.List;
 
 public class GestorCanchas {
 
-
-    private List<Cancha> elementos = new ArrayList<>();
-
     private final DAO<Cancha> dao = new CanchaDAO();
 
-    public Cancha buscar(int id) throws ElementoNoEncontradoException {
-        for (Cancha c : elementos) {
-            if (c.getId() == id) {
-                return c;
-            }
-        }
-        throw new ElementoNoEncontradoException("No se encontró la cancha con ID: " + id);
+    public Cancha buscar(int id) throws AccesoDatosException, ElementoNoEncontradoException {
+        return dao.buscarPorId(id);
     }
 
-    public List<Cancha> listarPorSuperficie(Superficie superficie) {
+    public List<Cancha> listarTodos() throws AccesoDatosException {
+        return dao.listarTodos();
+    }
+
+    public List<Cancha> listarPorSuperficie(Superficie superficie) throws AccesoDatosException {
         List<Cancha> resultado = new ArrayList<>();
-        for (Cancha c : elementos) {
+        for (Cancha c : dao.listarTodos()) {
             if (c.getSuperficie() == superficie) {
                 resultado.add(c);
             }
@@ -36,23 +33,15 @@ public class GestorCanchas {
         return resultado;
     }
 
-    public Cancha buscarEnBD(int id) throws AccesoDatosException, ElementoNoEncontradoException {
-        return dao.buscarPorId(id);
-    }
-
-    public List<Cancha> listarDesdeBD() throws AccesoDatosException {
-        return dao.listarTodos();
-    }
-
-    public void guardarEnBD(Cancha c) throws AccesoDatosException {
+    public void guardar(Cancha c) throws AccesoDatosException {
         dao.insertar(c);
     }
 
-    public void actualizarEnBD(Cancha c) throws AccesoDatosException, ElementoNoEncontradoException {
+    public void actualizar(Cancha c) throws AccesoDatosException, ElementoNoEncontradoException {
         dao.actualizar(c);
     }
 
-    public void eliminarDeBD(int id) throws AccesoDatosException, ElementoNoEncontradoException {
+    public void eliminar(int id) throws AccesoDatosException, ElementoNoEncontradoException {
         dao.eliminar(id);
     }
 }
