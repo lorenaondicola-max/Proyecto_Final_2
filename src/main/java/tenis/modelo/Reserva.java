@@ -132,6 +132,10 @@ public class Reserva implements Cancelable, Tarifable {
 
     public double getCargoCancelacion() { return cargoCancelacion; }
 
+    public void setCargoCancelacion(double cargoCancelacion) {
+        this.cargoCancelacion = cargoCancelacion;
+    }
+
     public boolean isAsistio() { return asistio; }
     public void setAsistio(boolean asistio) { this.asistio = asistio; }
 

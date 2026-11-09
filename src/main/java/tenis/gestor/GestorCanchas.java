@@ -12,10 +12,9 @@ import java.util.List;
 
 public class GestorCanchas {
 
-    // Lista en memoria para operaciones rápidas
+
     private List<Cancha> elementos = new ArrayList<>();
 
-    // Conexión con la capa de persistencia MySQL
     private final DAO<Cancha> dao = new CanchaDAO();
 
     public Cancha buscar(int id) throws ElementoNoEncontradoException {
@@ -37,7 +36,6 @@ public class GestorCanchas {
         return resultado;
     }
 
-    // Métodos para interactuar con la Base de Datos mediante el DAO
     public Cancha buscarEnBD(int id) throws AccesoDatosException, ElementoNoEncontradoException {
         return dao.buscarPorId(id);
     }
