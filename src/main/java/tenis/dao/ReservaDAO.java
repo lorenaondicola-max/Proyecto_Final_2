@@ -7,6 +7,7 @@ import tenis.excepciones.AccesoDatosException;
 import tenis.excepciones.ElementoNoEncontradoException;
 import tenis.interfaces.DAO;
 import tenis.modelo.Cancha;
+import tenis.modelo.Extra;
 import tenis.modelo.Jugador;
 import tenis.modelo.Reserva;
 
@@ -18,6 +19,11 @@ import java.util.List;
 public class ReservaDAO implements DAO<Reserva> {
 
     private static final String SQL_INSERTAR = "INSERT INTO reservas (id, cancha_id, jugador_id, titular_id, inicio, fin, tipo_juego, estado, cargo_cancelacion, asistio) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    private static final String SQL_INSERTAR_EXTRA = "INSERT INTO reserva_extras (id, reserva_id, precio_unitario) VALUES (?, ?, ?)";
+    private static final String SQL_ELIMINAR_EXTRAS = "DELETE FROM reserva_extras WHERE reserva_id = ?";
+    private static final String SQL_LISTAR_EXTRAS = "SELECT id, precio_unitario FROM reserva_extras WHERE reserva_id = ?";
+
     private static final String SQL_LISTAR = "SELECT * FROM reservas ORDER BY inicio";
     private static final String SQL_BUSCAR = "SELECT * FROM reservas WHERE id = ?";
     private static final String SQL_ACTUALIZAR = "UPDATE reservas SET cancha_id = ?, jugador_id = ?, titular_id = ?, inicio = ?, fin = ?, tipo_juego = ?, estado = ?, cargo_cancelacion = ?, asistio = ? WHERE id = ?";
@@ -28,13 +34,13 @@ public class ReservaDAO implements DAO<Reserva> {
 
     @Override
     public void insertar(Reserva r) throws AccesoDatosException {
+        // Reserva principal
         try (Connection con = ConexionDB.getConexion();
              PreparedStatement ps = con.prepareStatement(SQL_INSERTAR)) {
             ps.setInt(1, r.getId());
             ps.setInt(2, r.getCancha().getId());
             ps.setInt(3, r.getJugador().getId());
 
-            // Si el titular es distinto o existe, guardamos su ID; si no, manejamos nulo o el mismo jugador
             if (r.getTitular() != null) {
                 ps.setInt(4, r.getTitular().getId());
             } else {
@@ -51,6 +57,21 @@ public class ReservaDAO implements DAO<Reserva> {
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new AccesoDatosException("Error al insertar la reserva ID: " + r.getId(), e);
+        }
+
+        // Extra
+        if (r.getExtras() != null && !r.getExtras().isEmpty()) {
+            for (Extra extra : r.getExtras()) {
+                try (Connection con = ConexionDB.getConexion();
+                     PreparedStatement psExtra = con.prepareStatement(SQL_INSERTAR_EXTRA)) {
+                    psExtra.setInt(1, extra.getId());
+                    psExtra.setInt(2, r.getId());
+                    psExtra.setDouble(3, extra.getPrecioUnitario());
+                    psExtra.executeUpdate();
+                } catch (SQLException e) {
+                    throw new AccesoDatosException("Error al insertar los extras de la reserva ID: " + r.getId(), e);
+                }
+            }
         }
     }
 
@@ -87,6 +108,7 @@ public class ReservaDAO implements DAO<Reserva> {
 
     @Override
     public void actualizar(Reserva r) throws AccesoDatosException, ElementoNoEncontradoException {
+        // Reserva principal
         int filas;
         try (Connection con = ConexionDB.getConexion();
              PreparedStatement ps = con.prepareStatement(SQL_ACTUALIZAR)) {
@@ -111,13 +133,47 @@ public class ReservaDAO implements DAO<Reserva> {
         } catch (SQLException e) {
             throw new AccesoDatosException("Error al actualizar la reserva ID: " + r.getId(), e);
         }
+
         if (filas == 0) {
             throw new ElementoNoEncontradoException("No se pudo actualizar, no existe la reserva con ID: " + r.getId());
+        }
+
+        // 2. Sincronizamos los extras: borramos los viejos asociados y reinsertamos los actuales
+        try (Connection con = ConexionDB.getConexion();
+             PreparedStatement psDel = con.prepareStatement(SQL_ELIMINAR_EXTRAS)) {
+            psDel.setInt(1, r.getId());
+            psDel.executeUpdate();
+        } catch (SQLException e) {
+            throw new AccesoDatosException("Error al limpiar los extras antiguos de la reserva ID: " + r.getId(), e);
+        }
+
+        if (r.getExtras() != null && !r.getExtras().isEmpty()) {
+            for (Extra extra : r.getExtras()) {
+                try (Connection con = ConexionDB.getConexion();
+                     PreparedStatement psExtra = con.prepareStatement(SQL_INSERTAR_EXTRA)) {
+                    psExtra.setInt(1, extra.getId());
+                    psExtra.setInt(2, r.getId());
+                    psExtra.setDouble(3, extra.getPrecioUnitario());
+                    psExtra.executeUpdate();
+                } catch (SQLException e) {
+                    throw new AccesoDatosException("Error al actualizar los extras de la reserva ID: " + r.getId(), e);
+                }
+            }
         }
     }
 
     @Override
     public void eliminar(int id) throws AccesoDatosException, ElementoNoEncontradoException {
+        // Borramos primero los extras asociados para evitar problemas de clave foránea
+        try (Connection con = ConexionDB.getConexion();
+             PreparedStatement psDelExtra = con.prepareStatement(SQL_ELIMINAR_EXTRAS)) {
+            psDelExtra.setInt(1, id);
+            psDelExtra.executeUpdate();
+        } catch (SQLException e) {
+            throw new AccesoDatosException("Error al eliminar los extras de la reserva ID: " + id, e);
+        }
+
+        // Borramos la reserva principal
         int filas;
         try (Connection con = ConexionDB.getConexion();
              PreparedStatement ps = con.prepareStatement(SQL_ELIMINAR)) {
@@ -126,6 +182,7 @@ public class ReservaDAO implements DAO<Reserva> {
         } catch (SQLException e) {
             throw new AccesoDatosException("Error al eliminar la reserva con ID: " + id, e);
         }
+
         if (filas == 0) {
             throw new ElementoNoEncontradoException("No se pudo eliminar, no existe la reserva con ID: " + id);
         }
@@ -158,11 +215,32 @@ public class ReservaDAO implements DAO<Reserva> {
         }
 
         Reserva reserva = new Reserva(id, cancha, jugador, titular, inicio, fin, tipoJuego);
-
-        // Seteamos los atributos adicionales si la base de datos ya los guardó (estado, cargo, asistencia)
         reserva.setEstado(EstadoReserva.valueOf(rs.getString("estado")));
         reserva.setCargoCancelacion(rs.getDouble("cargo_cancelacion"));
         reserva.setAsistio(rs.getBoolean("asistio"));
+
+        // Cargar los extras asociados a esta reserva
+        try (Connection con = ConexionDB.getConexion();
+             PreparedStatement psExtras = con.prepareStatement(SQL_LISTAR_EXTRAS)) {
+            psExtras.setInt(1, id);
+            try (ResultSet rsExtras = psExtras.executeQuery()) {
+                while (rsExtras.next()) {
+                    int extraId = rsExtras.getInt("id");
+                    double precioUnitario = rsExtras.getDouble("precio_unitario");
+
+                    Extra extra = new Extra(extraId, precioUnitario, reserva) {
+                        @Override
+                        public double calcularCosto() {
+                            return this.precioUnitario; // O el cálculo que corresponda
+                        }
+                    };
+
+                    reserva.agregarExtra(extra);
+                }
+            }
+        } catch (SQLException e) {
+            throw new SQLException("Error al cargar los extras de la reserva ID: " + id, e);
+        }
 
         return reserva;
     }
