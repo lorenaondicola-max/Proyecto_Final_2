@@ -17,124 +17,126 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
-public static void main(String[] args) {
-    System.out.println("=== INICIANDO PRUEBA DEL SISTEMA DE TENIS ===");
+public class App {
+    public static void main(String[] args) {
+        System.out.println("=== INICIANDO PRUEBA DEL SISTEMA DE TENIS ===");
 
-    // Instanciamos los gestores
-    GestorClub gestorClub = new GestorClub();
-    GestorJugador gestorJugador = new GestorJugador();
-    GestorCanchas gestorCancha = new GestorCanchas();
-    GestorReserva gestorReserva = new GestorReserva();
+        // Instanciamos los gestores
+        GestorClub gestorClub = new GestorClub();
+        GestorJugador gestorJugador = new GestorJugador();
+        GestorCanchas gestorCancha = new GestorCanchas();
+        GestorReserva gestorReserva = new GestorReserva();
 
-    Tarifa tarifa = new Tarifa(5000.0, 10.0, 20.0, 15.0, 20.0);
+        Tarifa tarifa = new Tarifa(5000.0, 10.0, 20.0, 15.0, 20.0);
 
-    try {
-        // 1. CREAR Y GUARDAR UN CLUB
-        System.out.println("\n--- 1. Registrando Club ---");
-        Club club = new Club(
-                0,
-                "Tenis Club Central",
-                "Av. Libertador 1234",
-                LocalTime.of(8, 0),
-                LocalTime.of(22, 0),
-                LocalTime.of(18, 0),
-                LocalTime.of(21, 0),
-                new ArrayList<>(),
-                24,
-                50.0,
-                tarifa
-        );
-        gestorClub.guardarEnBD(club);
-        System.out.println("¡Club guardado con éxito: " + club.getNombre() + "!");
+        try {
+            // 1. CREAR Y GUARDAR UN CLUB
+            System.out.println("\n--- 1. Registrando Club ---");
+            Club club = new Club(
+                    0,
+                    "Tenis Club Central",
+                    "Av. Libertador 1234",
+                    LocalTime.of(8, 0),
+                    LocalTime.of(22, 0),
+                    LocalTime.of(18, 0),
+                    LocalTime.of(21, 0),
+                    new ArrayList<>(),
+                    24,
+                    50.0,
+                    tarifa
+            );
+            gestorClub.guardarEnBD(club);
+            System.out.println("¡Club guardado con éxito: " + club.getNombre() + "!");
 
-        // 2. CREAR Y GUARDAR JUGADORES
-        System.out.println("\n--- 2. Registrando Jugadores ---");
-        Jugador adulto = new Jugador(
-                0,
-                "Carlos Pérez",
-                "30123456",
-                LocalDate.of(1985, 5, 12),
-                "Calle Falsa 123",
-                "1122334455",
-                "carlos@email.com",
-                "cperez",
-                "hash123",
-                true,
-                Nivel.AVANZADO,
-                "Singles A"
-        );
-        gestorJugador.guardar(adulto);
-        System.out.println("Jugador adulto guardado: " + adulto.getNombre());
+            // 2. CREAR Y GUARDAR JUGADORES
+            System.out.println("\n--- 2. Registrando Jugadores ---");
+            Jugador adulto = new Jugador(
+                    0,
+                    "Carlos Pérez",
+                    "30123456",
+                    LocalDate.of(1985, 5, 12),
+                    "Calle Falsa 123",
+                    "1122334455",
+                    "carlos@email.com",
+                    "cperez",
+                    "hash123",
+                    true,
+                    Nivel.AVANZADO,
+                    "Singles A"
+            );
+            gestorJugador.guardar(adulto);
+            System.out.println("Jugador adulto guardado: " + adulto.getNombre());
 
-        Jugador menor = new Jugador(
-                0,
-                "Lucas Pérez",
-                "45123456",
-                LocalDate.of(2010, 8, 20),
-                "Calle Falsa 123",
-                "1155443322",
-                "lucas@email.com",
-                false,
-                Nivel.INTERMEDIO,
-                "Juvenil",
-                adulto
-        );
-        gestorJugador.guardar(menor);
-        System.out.println("Jugador menor guardado con responsable: " + menor.getNombre());
+            Jugador menor = new Jugador(
+                    0,
+                    "Lucas Pérez",
+                    "45123456",
+                    LocalDate.of(2010, 8, 20),
+                    "Calle Falsa 123",
+                    "1155443322",
+                    "lucas@email.com",
+                    false,
+                    Nivel.INTERMEDIO,
+                    "Juvenil",
+                    adulto
+            );
+            gestorJugador.guardar(menor);
+            System.out.println("Jugador menor guardado con responsable: " + menor.getNombre());
 
-        // 3. CREAR Y GUARDAR CANCHA
-        System.out.println("\n--- 3. Registrando Cancha ---");
-        Cancha cancha = new Cancha(
-                0,
-                1,
-                Superficie.POLVO_LADRILLO,
-                true,
-                club
-        );
-        gestorCancha.guardar(cancha);
-        System.out.println("Cancha N°" + cancha.getNumero() + " (" + cancha.getSuperficie() + ") guardada con éxito.");
+            // 3. CREAR Y GUARDAR CANCHA
+            System.out.println("\n--- 3. Registrando Cancha ---");
+            Cancha cancha = new Cancha(
+                    0,
+                    1,
+                    Superficie.POLVO_LADRILLO,
+                    true,
+                    club
+            );
+            gestorCancha.guardar(cancha);
+            System.out.println("Cancha N°" + cancha.getNumero() + " (" + cancha.getSuperficie() + ") guardada con éxito.");
 
-        // 4. CREAR Y GUARDAR RESERVA CON EXTRAS
-        System.out.println("\n--- 4. Registrando Reserva ---");
-        LocalDateTime inicio = LocalDateTime.now().plusDays(1).withHour(10).withMinute(0);
-        LocalDateTime fin = inicio.plusHours(1);
+            // 4. CREAR Y GUARDAR RESERVA CON EXTRAS
+            System.out.println("\n--- 4. Registrando Reserva ---");
+            LocalDateTime inicio = LocalDateTime.now().plusDays(1).withHour(10).withMinute(0);
+            LocalDateTime fin = inicio.plusHours(1);
 
-        Reserva reserva = new Reserva(
-                0,
-                cancha,
-                menor,     // El que juega
-                adulto,    // El titular responsable de pagar/reservar
-                inicio,
-                fin,
-                TipoJuego.SINGLES
-        );
+            Reserva reserva = new Reserva(
+                    0,
+                    cancha,
+                    menor,     // El que juega
+                    adulto,    // El titular responsable de pagar/reservar
+                    inicio,
+                    fin,
+                    TipoJuego.SINGLES
+            );
 
-        // Agregamos un extra (ej: Alquiler de Raqueta o Pelotas)
-        Extra extraReserva = new Extra(1, 1500.0, reserva) {
-            @Override
-            public double calcularCosto() {
-                return this.precioUnitario;
-            }
-        };
-        reserva.agregarExtra(extraReserva);
+            // Agregamos un extra (ej: Alquiler de Raqueta o Pelotas)
+            Extra extraReserva = new Extra(1, 1500.0, reserva) {
+                @Override
+                public double calcularCosto() {
+                    return this.precioUnitario;
+                }
+            };
+            reserva.agregarExtra(extraReserva);
 
-        gestorReserva.guardarEnBD(reserva);
-        System.out.println("¡Reserva ID " + reserva.getId() + " guardada con sus extras!");
+            gestorReserva.guardarEnBD(reserva);
+            System.out.println("¡Reserva ID " + reserva.getId() + " guardada con sus extras!");
 
-        // 5. PROBAR LECTURA (BUSCAR DE LA BASE DE DATOS)
-        System.out.println("\n--- 5. Consultando Reserva desde la BD ---");
-        Reserva reservaRecuperada = gestorReserva.buscarEnBD(1);
-        System.out.println("Reserva encontrada en BD:");
-        System.out.println(" - Cancha N°: " + reservaRecuperada.getCancha().getNumero());
-        System.out.println(" - Jugador: " + reservaRecuperada.getJugador().getNombre());
-        System.out.println(" - Titular: " + reservaRecuperada.getTitular().getNombre());
-        System.out.println(" - Cantidad de Extras: " + reservaRecuperada.getExtras().size());
-        System.out.println(" - Costo Total calculado: $" + reservaRecuperada.calcularCosto());
+            // 5. PROBAR LECTURA (BUSCAR DE LA BASE DE DATOS)
+            System.out.println("\n--- 5. Consultando Reserva desde la BD ---");
+            Reserva reservaRecuperada = gestorReserva.buscarEnBD(1);
+            System.out.println("Reserva encontrada en BD:");
+            System.out.println(" - Cancha N°: " + reservaRecuperada.getCancha().getNumero());
+            System.out.println(" - Jugador: " + reservaRecuperada.getJugador().getNombre());
+            System.out.println(" - Titular: " + reservaRecuperada.getTitular().getNombre());
+            System.out.println(" - Cantidad de Extras: " + reservaRecuperada.getExtras().size());
+            System.out.println(" - Costo Total calculado: $" + reservaRecuperada.calcularCosto());
 
-        System.out.println("\n=== ¡PRUEBA FINALIZADA CON ÉXITO! ===");
+            System.out.println("\n=== ¡PRUEBA FINALIZADA CON ÉXITO! ===");
 
-    } catch (AccesoDatosException | ElementoNoEncontradoException e) {
-        System.err.println("❌ Error en la base de datos: " + e.getMessage());
-        e.printStackTrace();
+        } catch (AccesoDatosException | ElementoNoEncontradoException e) {
+            System.err.println("❌ Error en la base de datos: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
