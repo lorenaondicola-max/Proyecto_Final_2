@@ -3,6 +3,7 @@ package tenis.modelo;
 import tenis.enums.EstadoReserva;
 import tenis.enums.Superficie;
 import tenis.enums.TipoJuego;
+import tenis.excepciones.DatosInvalidosException;
 import tenis.interfaces.Cancelable;
 import tenis.interfaces.Tarifable;
 import java.time.Duration;
@@ -67,6 +68,11 @@ public class Reserva implements Cancelable, Tarifable {
 
     @Override
     public double cancelar(LocalDateTime ahora) {
+
+        if (this.estado != EstadoReserva.ACTIVA) {
+            throw new DatosInvalidosException("Solo se puede cancelar una reserva activa");
+        }
+
         Club club = cancha.getClub();
         int horasAnticipacionMinima = club.getHorasCancelacion(); // Por defecto 12 horas
 
