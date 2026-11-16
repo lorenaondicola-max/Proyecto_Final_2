@@ -43,7 +43,8 @@ public class Administrador extends Usuario {
 
     // Método para la creación de otros usuarios del sistema (Administradores, Recepcionistas o Jugadores)
     public Usuario crearUsuario(String tipoUsuario, int id, String nombre, String dni, LocalDate fechaNacimiento,
-                                String domicilio, String telefono, String email, String username, String passwordHash, Jugador responsable) {
+                                String domicilio, String telefono, String email, String username, String passwordHash,
+                                Jugador responsable) throws MenorSinResponsableException {
         switch (tipoUsuario.toLowerCase()) {
             case "administrador":
                 return new Administrador(id, nombre, dni, fechaNacimiento, domicilio, telefono, email, username, passwordHash);

@@ -1,6 +1,7 @@
 package tenis.modelo;
 
 import tenis.enums.Superficie;
+import tenis.excepciones.ElementoNoEncontradoException;
 import tenis.gestor.Repositorio;
 
 import java.time.LocalDateTime;
@@ -40,7 +41,7 @@ public class Cancha {
     }
 
     // Método para eliminar un bloqueo
-    public void eliminarBloqueo(int idBloqueo) {
+    public void eliminarBloqueo(int idBloqueo) throws ElementoNoEncontradoException {
         this.bloqueos.eliminar(idBloqueo);
     }
 

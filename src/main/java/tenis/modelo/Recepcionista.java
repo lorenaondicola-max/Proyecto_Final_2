@@ -30,7 +30,9 @@ public class Recepcionista extends Usuario {
     }
 
     // Métodos específicos según el diagrama UML
-    public Reserva registrarReserva(Cancha cancha, Jugador jugador, LocalDateTime inicio, LocalDateTime fin, TipoJuego tipoJuego) {
+    public Reserva registrarReserva(Cancha cancha, Jugador jugador, LocalDateTime inicio,
+                                    LocalDateTime fin, TipoJuego tipoJuego)
+            throws TurnoNoDisponibleException, CanchaBloqueadaException, MenorSinResponsableException {
         // 1. Validar que el club esté abierto en ese momento
         if (!this.club.estaAbierto(inicio)) {
             throw new TurnoNoDisponibleException("El club se encuentra cerrado en el horario seleccionado.");
