@@ -4,19 +4,19 @@ package tenis.main;
 import tenis.enums.Nivel;
 import tenis.enums.Superficie;
 import tenis.enums.TipoJuego;
-import tenis.excepciones.AccesoDatosException;
-import tenis.excepciones.ElementoNoEncontradoException;
-import tenis.excepciones.TurnoNoDisponibleException;
+import tenis.excepciones.*;
 import tenis.gestor.GestorCanchas;
 import tenis.gestor.GestorClub;
 import tenis.gestor.GestorJugador;
 import tenis.gestor.GestorReserva;
 import tenis.modelo.*;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
 
 public class App {
     public static void main(String[] args) {
@@ -41,7 +41,7 @@ public class App {
                     LocalTime.of(22, 0),
                     LocalTime.of(18, 0),
                     LocalTime.of(21, 0),
-                    new ArrayList<>(),
+                    new ArrayList<>(List.of(DayOfWeek.values())),
                     24,
                     50.0,
                     tarifa
@@ -96,36 +96,44 @@ public class App {
             gestorCancha.guardar(cancha);
             System.out.println("Cancha N°" + cancha.getNumero() + " (" + cancha.getSuperficie() + ") guardada con éxito.");
 
+            // El recepcionista atiende en el club; no se persiste, vive en memoria
+            Recepcionista recepcionista = new Recepcionista(
+                    0,
+                    "Ana Gómez",
+                    "28111222",
+                    LocalDate.of(1990, 3, 4),
+                    "Calle Real 456",
+                    "1133221100",
+                    "ana@email.com",
+                    "agomez",
+                    "clave123",
+                    club
+            );
+
             // 4. CREAR Y GUARDAR RESERVA CON EXTRAS
             System.out.println("\n--- 4. Registrando Reserva ---");
             LocalDateTime inicio = LocalDateTime.now().plusDays(1).withHour(10).withMinute(0);
             LocalDateTime fin = inicio.plusHours(1);
 
-            Reserva reserva = new Reserva(
-                    0,
-                    cancha,
-                    menor,     // El que juega
-                    adulto,    // El titular responsable de pagar/reservar
-                    inicio,
-                    fin,
-                    TipoJuego.SINGLES
-            );
+            Reserva reserva = recepcionista.registrarReserva(cancha, menor, inicio, fin, TipoJuego.SINGLES);
 
             // Agregamos un extra (ej: Alquiler de Raqueta o Pelotas)
-            Extra extraReserva = new Extra(1, 1500.0, reserva) {
-                @Override
-                public double calcularCosto() {
-                    return this.precioUnitario;
-                }
-            };
+            Extra extraReserva = new Raqueta(1, 1500.0, reserva, 1);
             reserva.agregarExtra(extraReserva);
-
             gestorReserva.guardarEnBD(reserva);
             System.out.println("¡Reserva ID " + reserva.getId() + " guardada con sus extras!");
 
+            //Probamos registrar una reserva repetida para ver el rechazo
+            try {
+                Reserva repetida = recepcionista.registrarReserva(cancha, adulto, inicio, fin, TipoJuego.SINGLES);
+                gestorReserva.guardarEnBD(repetida);
+            } catch (TurnoNoDisponibleException e){
+                System.out.println("Reserva rechazada: " + e.getMessage());
+            }
+
             // 5. PROBAR LECTURA (BUSCAR DE LA BASE DE DATOS)
             System.out.println("\n--- 5. Consultando Reserva desde la BD ---");
-            Reserva reservaRecuperada = gestorReserva.buscarEnBD(1);
+            Reserva reservaRecuperada = gestorReserva.buscarEnBD(reserva.getId());
             System.out.println("Reserva encontrada en BD:");
             System.out.println(" - Cancha N°: " + reservaRecuperada.getCancha().getNumero());
             System.out.println(" - Jugador: " + reservaRecuperada.getJugador().getNombre());
@@ -135,7 +143,9 @@ public class App {
 
             System.out.println("\n=== ¡PRUEBA FINALIZADA CON ÉXITO! ===");
 
-        } catch (AccesoDatosException | ElementoNoEncontradoException | TurnoNoDisponibleException e) {
+        } catch (TurnoNoDisponibleException | CanchaBloqueadaException | MenorSinResponsableException e) {
+            System.out.println("No se pudo reservar: " + e.getMessage());
+        } catch (AccesoDatosException | ElementoNoEncontradoException e) {
             System.err.println("❌ Error en la base de datos: " + e.getMessage());
             e.printStackTrace();
         }
