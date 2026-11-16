@@ -6,6 +6,7 @@ import tenis.enums.Superficie;
 import tenis.enums.TipoJuego;
 import tenis.excepciones.AccesoDatosException;
 import tenis.excepciones.ElementoNoEncontradoException;
+import tenis.excepciones.TurnoNoDisponibleException;
 import tenis.gestor.GestorCanchas;
 import tenis.gestor.GestorClub;
 import tenis.gestor.GestorJugador;
@@ -134,7 +135,7 @@ public class App {
 
             System.out.println("\n=== ¡PRUEBA FINALIZADA CON ÉXITO! ===");
 
-        } catch (AccesoDatosException | ElementoNoEncontradoException e) {
+        } catch (AccesoDatosException | ElementoNoEncontradoException | TurnoNoDisponibleException e) {
             System.err.println("❌ Error en la base de datos: " + e.getMessage());
             e.printStackTrace();
         }

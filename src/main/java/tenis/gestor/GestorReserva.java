@@ -3,6 +3,7 @@ package tenis.gestor;
 import tenis.dao.ReservaDAO;
 import tenis.excepciones.AccesoDatosException;
 import tenis.excepciones.ElementoNoEncontradoException;
+import tenis.excepciones.TurnoNoDisponibleException;
 import tenis.interfaces.DAO;
 import tenis.modelo.Extra;
 import tenis.modelo.Reserva;
@@ -23,8 +24,14 @@ public class GestorReserva {
         return dao.listarTodos();
     }
 
-    public void guardarEnBD(Reserva r) throws AccesoDatosException {
+    public void guardarEnBD(Reserva r) throws AccesoDatosException, TurnoNoDisponibleException {
         // Inserta la reserva y recorre su lista de extras para guardarlos en la tabla secundaria
+        List<Reserva> existentes = dao.listarTodos();
+        for (Reserva otra : existentes){
+            if (otra.getCancha().getId() == r.getCancha().getId() && otra.seSuperpone(r.getInicio(), r.getFin())){
+                throw new TurnoNoDisponibleException("La cancha ya está reservada en ese horario");
+            }
+        }
         dao.insertar(r);
     }
 
