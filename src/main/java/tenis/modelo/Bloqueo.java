@@ -1,9 +1,11 @@
 package tenis.modelo;
 
 import tenis.enums.MotivoBloqueo;
+import tenis.interfaces.Identificable;
+
 import java.time.LocalDateTime;
 
-public class Bloqueo {
+public class Bloqueo implements Identificable {
     private int id;
     private MotivoBloqueo motivo;
     private LocalDateTime desde;
@@ -26,7 +28,9 @@ public class Bloqueo {
     }
 
     // Getters y Setters
+    @Override
     public int getId() { return id; }
+
     public void setId(int id) { this.id = id; }
 
     public MotivoBloqueo getMotivo() { return motivo; }
