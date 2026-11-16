@@ -29,19 +29,43 @@ public class Bloqueo implements Identificable {
 
     // Getters y Setters
     @Override
-    public int getId() { return id; }
+    public int getId() {
+        return id;
+    }
 
-    public void setId(int id) { this.id = id; }
+    public void setId(int id) {
+        this.id = id;
+    }
 
-    public MotivoBloqueo getMotivo() { return motivo; }
-    public void setMotivo(MotivoBloqueo motivo) { this.motivo = motivo; }
+    public MotivoBloqueo getMotivo() {
+        return motivo;
+    }
 
-    public LocalDateTime getDesde() { return desde; }
-    public void setDesde(LocalDateTime desde) { this.desde = desde; }
+    public void setMotivo(MotivoBloqueo motivo) {
+        this.motivo = motivo;
+    }
 
-    public LocalDateTime getHasta() { return hasta; }
-    public void setHasta(LocalDateTime hasta) { this.hasta = hasta; }
+    public LocalDateTime getDesde() {
+        return desde;
+    }
 
-    public String getDetalle() { return detalle; }
-    public void setDetalle(String detalle) { this.detalle = detalle; }
+    public void setDesde(LocalDateTime desde) {
+        this.desde = desde;
+    }
+
+    public LocalDateTime getHasta() {
+        return hasta;
+    }
+
+    public void setHasta(LocalDateTime hasta) {
+        this.hasta = hasta;
+    }
+
+    public String getDetalle() {
+        return detalle;
+    }
+
+    public void setDetalle(String detalle) {
+        this.detalle = detalle;
+    }
 }

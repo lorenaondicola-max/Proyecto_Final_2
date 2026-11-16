@@ -1,9 +1,10 @@
 package tenis.modelo;
 
 import tenis.enums.Superficie;
+import tenis.gestor.Repositorio;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.List;
 
 public class Cancha {
     private int id;
@@ -11,7 +12,7 @@ public class Cancha {
     private Superficie superficie;
     private boolean tieneLuz;
     private Club club;
-    private ArrayList<Bloqueo> bloqueos;
+    private Repositorio<Bloqueo> bloqueos;
 
     // Constructor
     public Cancha(int id, int numero, Superficie superficie, boolean tieneLuz, Club club) {
@@ -20,12 +21,12 @@ public class Cancha {
         this.superficie = superficie;
         this.tieneLuz = tieneLuz;
         this.club = club;
-        this.bloqueos = new ArrayList<>();
+        this.bloqueos = new Repositorio<>();
     }
 
     // Método verificar si está bloqueada en un rango de tiempo
     public boolean estaBloqueada(LocalDateTime desde, LocalDateTime hasta) {
-        for (Bloqueo bloqueo : this.bloqueos) {
+        for (Bloqueo bloqueo : this.bloqueos.listar()) {
             if (bloqueo.seSuperpone(desde, hasta)) {
                 return true; // Se encontró al menos un bloqueo que se superpone
             }
@@ -35,35 +36,56 @@ public class Cancha {
 
     // Método para agregar un bloqueo a la cancha
     public void agregarBloqueo(Bloqueo bloqueo) {
-        this.bloqueos.add(bloqueo);
+        this.bloqueos.agregar(bloqueo);
     }
 
     // Método para eliminar un bloqueo
     public void eliminarBloqueo(int idBloqueo) {
-        for (int i = 0; i < this.bloqueos.size(); i++) {
-            if (this.bloqueos.get(i).getId() == idBloqueo) {
-                this.bloqueos.remove(i);
-                break;
-            }
-        }
+        this.bloqueos.eliminar(idBloqueo);
     }
 
     // Getters y Setters
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public int getId() {
+        return id;
+    }
 
-    public int getNumero() { return numero; }
-    public void setNumero(int numero) { this.numero = numero; }
+    public void setId(int id) {
+        this.id = id;
+    }
 
-    public Superficie getSuperficie() { return superficie; }
-    public void setSuperficie(Superficie superficie) { this.superficie = superficie; }
+    public int getNumero() {
+        return numero;
+    }
 
-    public boolean isTieneLuz() { return tieneLuz; }
-    public void setTieneLuz(boolean tieneLuz) { this.tieneLuz = tieneLuz; }
+    public void setNumero(int numero) {
+        this.numero = numero;
+    }
 
-    public Club getClub() { return club; }
-    public void setClub(Club club) { this.club = club; }
+    public Superficie getSuperficie() {
+        return superficie;
+    }
 
-    public ArrayList<Bloqueo> getBloqueos() { return bloqueos; }
-    public void setBloqueos(ArrayList<Bloqueo> bloqueos) { this.bloqueos = bloqueos; }
+    public void setSuperficie(Superficie superficie) {
+        this.superficie = superficie;
+    }
+
+    public boolean isTieneLuz() {
+        return tieneLuz;
+    }
+
+    public void setTieneLuz(boolean tieneLuz) {
+        this.tieneLuz = tieneLuz;
+    }
+
+    public Club getClub() {
+        return club;
+    }
+
+    public void setClub(Club club) {
+        this.club = club;
+    }
+
+    public List<Bloqueo> getBloqueos() {
+        return bloqueos.listar();
+    }
 }
