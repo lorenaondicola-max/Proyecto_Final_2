@@ -3,6 +3,7 @@ package tenis.modelo;
 import tenis.enums.MotivoBloqueo;
 import tenis.enums.TipoJuego;
 import tenis.excepciones.CanchaBloqueadaException;
+import tenis.excepciones.DatosInvalidosException;
 import tenis.excepciones.MenorSinResponsableException;
 import tenis.excepciones.TurnoNoDisponibleException;
 
@@ -33,17 +34,22 @@ public class Recepcionista extends Usuario {
     public Reserva registrarReserva(Cancha cancha, Jugador jugador, LocalDateTime inicio,
                                     LocalDateTime fin, TipoJuego tipoJuego)
             throws TurnoNoDisponibleException, CanchaBloqueadaException, MenorSinResponsableException {
-        // 1. Validar que el club esté abierto en ese momento
+        //1. Validar que la hora de fin no sea anterior a la de inicio
+        if (!fin.isAfter(inicio)) {
+            throw new DatosInvalidosException("El turno debe terminar después de empezar");
+        }
+
+        // 2. Validar que el club esté abierto en ese momento
         if (!this.club.estaAbierto(inicio)) {
             throw new TurnoNoDisponibleException("El club se encuentra cerrado en el horario seleccionado.");
         }
 
-        // 2. Validar que la cancha no esté bloqueada por mantenimiento, torneo o clases
+        // 3. Validar que la cancha no esté bloqueada por mantenimiento, torneo o clases
         if (cancha.estaBloqueada(inicio, fin)) {
             throw new CanchaBloqueadaException("La cancha se encuentra bloqueada en el período seleccionado.");
         }
 
-        // 3. Validar las reglas específicas para jugadores menores de edad
+        // 4. Validar las reglas específicas para jugadores menores de edad
         Jugador titularFinal = jugador;
         if (jugador.esMenor()) {
             if (jugador.getResponsable() == null) {
@@ -53,7 +59,7 @@ public class Recepcionista extends Usuario {
             titularFinal = jugador.getResponsable();
         }
 
-        // 4. Crear y retornar la nueva reserva (el ID luego será manejado por la BD)
+        // 5. Crear y retornar la nueva reserva (el ID luego será manejado por la BD)
         int idReserva = contadorIdReserva++;
         Reserva nuevaReserva = new Reserva(idReserva, cancha, jugador, titularFinal, inicio, fin, tipoJuego);
 
