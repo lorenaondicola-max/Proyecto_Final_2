@@ -1,6 +1,9 @@
 package tenis.modelo;
 
 import tenis.enums.Superficie;
+import tenis.excepciones.DatosInvalidosException;
+import tenis.excepciones.MenorSinResponsableException;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -52,7 +55,7 @@ public class Administrador extends Usuario {
 
                 if (edad < 18) {
                     if (responsable == null) {
-                        throw new IllegalArgumentException("El jugador es menor de edad y requiere obligatoriamente un responsable asignado.");
+                        throw new MenorSinResponsableException("El jugador es menor de edad y requiere obligatoriamente un responsable asignado.");
                     }
                     // Utiliza el constructor de menores (10 parámetros, sin credenciales)
                     return new Jugador(id, nombre, dni, fechaNacimiento, domicilio, telefono, email, false, null, null, responsable);
@@ -61,7 +64,7 @@ public class Administrador extends Usuario {
                     return new Jugador(id, nombre, dni, fechaNacimiento, domicilio, telefono, email, username, passwordHash, false, null, null);
                 }
             default:
-                throw new IllegalArgumentException("Tipo de usuario desconocido: " + tipoUsuario);
+                throw new DatosInvalidosException("Tipo de usuario desconocido: " + tipoUsuario);
         }
     }
 }

@@ -2,6 +2,10 @@ package tenis.modelo;
 
 import tenis.enums.MotivoBloqueo;
 import tenis.enums.TipoJuego;
+import tenis.excepciones.CanchaBloqueadaException;
+import tenis.excepciones.MenorSinResponsableException;
+import tenis.excepciones.TurnoNoDisponibleException;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -29,19 +33,19 @@ public class Recepcionista extends Usuario {
     public Reserva registrarReserva(Cancha cancha, Jugador jugador, LocalDateTime inicio, LocalDateTime fin, TipoJuego tipoJuego) {
         // 1. Validar que el club esté abierto en ese momento
         if (!this.club.estaAbierto(inicio)) {
-            throw new IllegalArgumentException("El club se encuentra cerrado en el horario seleccionado.");
+            throw new TurnoNoDisponibleException("El club se encuentra cerrado en el horario seleccionado.");
         }
 
         // 2. Validar que la cancha no esté bloqueada por mantenimiento, torneo o clases
         if (cancha.estaBloqueada(inicio, fin)) {
-            throw new IllegalArgumentException("La cancha se encuentra bloqueada en el período seleccionado.");
+            throw new CanchaBloqueadaException("La cancha se encuentra bloqueada en el período seleccionado.");
         }
 
         // 3. Validar las reglas específicas para jugadores menores de edad
         Jugador titularFinal = jugador;
         if (jugador.esMenor()) {
             if (jugador.getResponsable() == null) {
-                throw new IllegalArgumentException("El jugador menor de edad no tiene un responsable asociado.");
+                throw new MenorSinResponsableException("El jugador menor de edad no tiene un responsable asociado.");
             }
             // El titular y responsable que responde por la reserva es el adulto asignado
             titularFinal = jugador.getResponsable();
@@ -66,6 +70,11 @@ public class Recepcionista extends Usuario {
     }
 
     // Getters y Setters
-    public Club getClub() { return club; }
-    public void setClub(Club club) { this.club = club; }
+    public Club getClub() {
+        return club;
+    }
+
+    public void setClub(Club club) {
+        this.club = club;
+    }
 }
