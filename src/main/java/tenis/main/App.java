@@ -14,6 +14,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -37,11 +38,20 @@ public class App {
                     case 1 -> cargarDatos();
                     case 2 -> listarCanchas();
                     case 3 -> listarJugadores();
+                    case 4 -> registrarReserva();
+                    case 5 -> listarReservas();
+                    case 6 -> cancelarReserva();
                     case 0 -> System.out.println("Hasta luego.");
                     default -> System.out.println("Opción inválida.");
                 }
+            } catch (TurnoNoDisponibleException | CanchaBloqueadaException | MenorSinResponsableException e) {
+            System.out.println("No se pudo reservar: " + e.getMessage());
+            } catch (ElementoNoEncontradoException e) {
+                System.out.println("No encontrado: " + e.getMessage());
             } catch (AccesoDatosException e) {
                 System.out.println("Error de base de datos: " + e.getMessage());
+            } catch (DatosInvalidosException e) {
+                System.out.println("Dato inválido: " + e.getMessage());
             }
         } while (opcion != 0);
     }
@@ -173,6 +183,52 @@ public class App {
         }
     }
 
+    private static void registrarReserva() throws AccesoDatosException, ElementoNoEncontradoException,
+            TurnoNoDisponibleException, CanchaBloqueadaException, MenorSinResponsableException {
+        if (recepcionista == null) {
+            System.out.println("Primero cargá los datos (opción 1).");
+            return;
+        }
+        listarCanchas();
+        Cancha cancha = gestorCancha.buscar(leerEntero("Id de cancha: "));
+        listarJugadores();
+        Jugador jugador = gestorJugador.buscar(leerEntero("Id de jugador: "));
+        LocalDate fecha = leerFecha("Fecha (AAAA-MM-DD): ");
+        LocalTime hora = leerHora("Hora de inicio (HH:MM): ");
+        int horas = leerEntero("Duración en horas: ");
+        TipoJuego tipo = TipoJuego.SINGLES;
+        if (leerEntero("1 = Singles, 2 = Dobles: ") == 2) {
+            tipo = TipoJuego.DOBLES;
+        }
+
+        LocalDateTime inicio = LocalDateTime.of(fecha, hora);
+        Reserva r = recepcionista.registrarReserva(cancha, jugador, inicio, inicio.plusHours(horas), tipo);
+        gestorReserva.guardarEnBD(r);
+        System.out.println("Reserva " + r.getId() + " registrada. Costo: $" + r.calcularCosto());
+    }
+
+    private static void listarReservas() throws AccesoDatosException {
+        List<Reserva> reservas = gestorReserva.listarDesdeBD();
+        if (reservas.isEmpty()) {
+            System.out.println("No hay reservas.");
+            return;
+        }
+        for (Reserva r : reservas) {
+            System.out.println(r);
+        }
+    }
+
+    private static void cancelarReserva() throws AccesoDatosException, ElementoNoEncontradoException {
+        Reserva r = gestorReserva.buscarEnBD(leerEntero("Id de la reserva a cancelar: "));
+        double cargo = r.cancelar(LocalDateTime.now());
+        gestorReserva.actualizarEnBD(r);
+        if (cargo == 0) {
+            System.out.println("Reserva cancelada sin cargo.");
+        } else {
+            System.out.println("Cancelación tardía. Cargo: $" + cargo);
+        }
+    }
+
     private static int leerEntero(String mensaje) {
         while (true) {
             System.out.print(mensaje);
@@ -180,6 +236,28 @@ public class App {
                 return Integer.parseInt(sc.nextLine().trim());
             } catch (NumberFormatException e) {
                 System.out.println("Ingresá un número.");
+            }
+        }
+    }
+
+    private static LocalDate leerFecha(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            try {
+                return LocalDate.parse(sc.nextLine().trim());
+            } catch (DateTimeParseException e) {
+                System.out.println("Formato inválido. Ejemplo: 2026-11-20");
+            }
+        }
+    }
+
+    private static LocalTime leerHora(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            try {
+                return LocalTime.parse(sc.nextLine().trim());
+            } catch (DateTimeParseException e) {
+                System.out.println("Formato inválido. Ejemplo: 10:00");
             }
         }
     }
