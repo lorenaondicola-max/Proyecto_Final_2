@@ -1,5 +1,7 @@
 package tenis.modelo;
 
+import tenis.enums.TipoExtra;
+
 /**
  *  Venta de pelotas. Se cobra por tubo.
  */
@@ -14,6 +16,11 @@ public class Pelotas extends Extra {
     public Pelotas(int id, double precioUnitario, Reserva reserva, int cantidadTubos) {
         super(id, precioUnitario, reserva);
         this.cantidadTubos = cantidadTubos;
+    }
+
+    @Override
+    public TipoExtra getTipo() {
+        return TipoExtra.PELOTAS;
     }
 
     /**

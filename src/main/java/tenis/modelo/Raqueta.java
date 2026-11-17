@@ -1,10 +1,11 @@
 package tenis.modelo;
 
 
+import tenis.enums.TipoExtra;
+
 /**
  * Alquiler de raquetas. Se cobra por unidad.
  */
-
 public class Raqueta extends Extra {
     private int cantidad;
 
@@ -16,6 +17,12 @@ public class Raqueta extends Extra {
         super(id, precioUnitario, reserva);
         this.cantidad = cantidad;
     }
+
+    @Override
+    public TipoExtra getTipo() {
+        return TipoExtra.RAQUETA;
+    }
+
     /**
      * @return precio de una raqueta multiplicado por la cantidad alquilada
      */

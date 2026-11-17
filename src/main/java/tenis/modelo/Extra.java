@@ -1,13 +1,13 @@
 package tenis.modelo;
 
 import tenis.interfaces.Tarifable;
+import tenis.enums.TipoExtra;
 
 /**
  * Servicio adicional que se contrata junto con una reserva.
  * Es abstracta porque cada tipo de extra se cobra de una manera distinta:
  * las subclases definen cómo se calcula el costo a partir del precio unitario.
  */
-
 public abstract class Extra implements Tarifable {
     protected int id;
     protected double precioUnitario;
@@ -17,13 +17,21 @@ public abstract class Extra implements Tarifable {
      * @param precioUnitario precio de una unidad; qué es "una unidad" lo define cada subclase
      * @param reserva reserva a la que pertenece el extra
      */
-
-
     public Extra(int id, double precioUnitario, Reserva reserva) {
         this.id = id;
         this.precioUnitario = precioUnitario;
         this.reserva = reserva;
     }
+
+    /**
+     * Indica qué tipo de extra es.
+     * Lo usa ReservaDAO para guardar el tipo en la base y, al leer,
+     * reconstruir la subclase correcta.
+     *
+     * @return tipo de extra
+     */
+    public abstract TipoExtra getTipo();
+
     /**
      * Calcula lo que cuesta este extra. Cada subclase aplica su propia fórmula.
      *

@@ -1,9 +1,10 @@
 package tenis.modelo;
 
+import tenis.enums.TipoExtra;
+
 /**
  * Clase con profesor. Se cobra por hora de clase, que puede durar distinto que el turno.
  */
-
 public class ClaseConProfesor extends Extra {
     private String profesor;
     private int duracionMin; // Duración de la clase en minutos
@@ -13,11 +14,15 @@ public class ClaseConProfesor extends Extra {
      * @param profesor nombre del profesor
      * @param duracionMin duración de la clase, en minutos
      */
-
     public ClaseConProfesor(int id, double precioUnitarioHora, Reserva reserva, String profesor, int duracionMin) {
         super(id, precioUnitarioHora, reserva);
         this.profesor = profesor;
         this.duracionMin = duracionMin;
+    }
+
+    @Override
+    public TipoExtra getTipo() {
+        return TipoExtra.CLASE;
     }
 
     /**

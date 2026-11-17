@@ -1,6 +1,9 @@
 package tenis.modelo;
 
+import tenis.enums.TipoExtra;
+
 import java.time.Duration;
+
 /**
  * Uso de la iluminación de la cancha. Se cobra por hora de turno.
  */
@@ -14,6 +17,10 @@ public class Iluminacion extends Extra {
         super(id, precioUnitario, reserva);
     }
 
+    @Override
+    public TipoExtra getTipo() {
+        return TipoExtra.ILUMINACION;
+    }
 
     /**
      * Calcula el costo según la duración del turno de la reserva asociada.
