@@ -146,7 +146,22 @@ public class App {
         gestorJugador.guardar(menor);
         System.out.println("Jugador menor guardado con responsable: " + menor.getNombre());
 
-        // 3. CREAR Y GUARDAR CANCHA
+        Jugador adulto2 = new Jugador(0,
+                "Juan Estrugamou",
+                "30886766", LocalDate.of(1984, 3, 15),
+                "9 de Julio 3111",
+                "2235394052",
+                "jmestrugamou@gmail.com",
+                "jmestrugamou",
+                "pass1234",
+                false,
+                Nivel.PRINCIPIANTE,
+                "Singles A"
+        );
+        gestorJugador.guardar(adulto2);
+        System.out.println("Jugador adulto guardado: " + adulto2.getNombre());
+
+        // 3. CREAR Y GUARDAR CANCHAS
         System.out.println("\n--- 3. Registrando Cancha ---");
         Cancha cancha = new Cancha(
                 0,
@@ -157,6 +172,27 @@ public class App {
         );
         gestorCancha.guardar(cancha);
         System.out.println("Cancha N°" + cancha.getNumero() + " (" + cancha.getSuperficie() + ") guardada con éxito.");
+
+        Cancha cancha2 = new Cancha(
+                0,
+                2,
+                Superficie.CEMENTO,
+                false,
+                club
+        );
+        gestorCancha.guardar(cancha2);
+        System.out.println("Cancha N°" + cancha2.getNumero() + " (" + cancha2.getSuperficie() + ") guardada con éxito.");
+
+        Cancha cancha3 = new Cancha(
+                0,
+                3,
+                Superficie.CEMENTO,
+                true,
+                club
+        );
+        gestorCancha.guardar(cancha3);
+        System.out.println("Cancha N°" + cancha3.getNumero() + " (" + cancha3.getSuperficie() + ") guardada con éxito.");
+
         System.out.println("\n=== ¡CARGA DE DATOS FINALIZADA CON ÉXITO! ===");
     }
 
