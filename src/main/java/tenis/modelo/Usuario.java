@@ -4,6 +4,13 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
 
+/**
+ * Persona registrada en el sistema.
+ * Es la clase base de {@link Administrador}, {@link Recepcionista} y {@link Jugador}:
+ * reúne los datos personales y de acceso que comparten, y obliga a cada
+ * subclase a definir sus propios permisos.
+ * Es abstracta porque no existe un usuario "a secas": siempre es de alguno de esos tres tipos.
+ */
 public abstract class Usuario {
     protected int id;
     protected String nombre;
@@ -15,7 +22,14 @@ public abstract class Usuario {
     protected String username;
     protected String passwordHash;
 
-    // Constructor CON ID (Para cuando se lee de la BD)
+    /**
+     * Crea un usuario con un id ya conocido.
+     * Se usa al reconstruir un usuario leído de la base de datos.
+     *
+     * @param id identificador asignado por la base de datos
+     * @param username nombre de usuario; puede ser null si no tiene acceso al sistema
+     * @param passwordHash clave de acceso; puede ser null si no tiene acceso al sistema
+     */
     public Usuario(int id, String nombre, String dni, LocalDate fechaNacimiento,
                    String domicilio, String telefono, String email, String username, String passwordHash) {
         this.id = id;
@@ -29,27 +43,42 @@ public abstract class Usuario {
         this.passwordHash = passwordHash;
     }
 
-    // Constructor SIN ID (Para objetos nuevos creados en la app)
+    /**
+     * Crea un usuario nuevo, todavía sin guardar.
+     * El id queda en 0 hasta que la base de datos le asigne uno.
+     */
     public Usuario(String nombre, String dni, LocalDate fechaNacimiento,
                    String domicilio, String telefono, String email, String username, String passwordHash) {
         this(0, nombre, dni, fechaNacimiento, domicilio, telefono, email, username, passwordHash);
     }
 
-    // Método abstracto para que cada tipo de usuario defina sus permisos específicos
+    /**
+     * Devuelve los permisos de este usuario. Cada subclase define los suyos.
+     *
+     * @return lista con los nombres de los permisos; vacía si no tiene acceso al sistema
+     */
     public abstract List<String> getPermisos();
 
-    // Valida si el usuario cuenta con credenciales para iniciar sesión
-    public boolean tieneCredenciales() {
-        return this.username != null && !this.username.trim().isEmpty() &&
-                this.passwordHash != null && !this.passwordHash.trim().isEmpty();
-    }
-
-    // Calcula si el usuario es menor de 18 años
+    /**
+     * Indica si el usuario tiene menos de 18 años a la fecha de hoy.
+     *
+     * @return true si es menor; false si es mayor o si no tiene fecha de nacimiento cargada
+     */
     public boolean esMenor() {
         if (this.fechaNacimiento == null) {
             return false;
         }
         return Period.between(this.fechaNacimiento, LocalDate.now()).getYears() < 18;
+    }
+
+    /**
+     * Indica si el usuario puede iniciar sesión.
+     *
+     * @return true si tiene nombre de usuario y clave, ambos no vacíos
+     */
+    public boolean tieneCredenciales() {
+        return this.username != null && !this.username.trim().isEmpty() &&
+                this.passwordHash != null && !this.passwordHash.trim().isEmpty();
     }
 
     // Getters y Setters

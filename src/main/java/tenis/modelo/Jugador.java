@@ -6,6 +6,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Persona que usa las canchas.
+ * Guarda su nivel de juego, su categoría, si es socio y cuántas cancelaciones tardías acumula.
+ * Un jugador menor de 18 años no tiene credenciales y tiene asociado un responsable adulto,
+ * que es quien responde por sus reservas.
+ */
 public class Jugador extends Usuario {
     private boolean esSocio;
     private Nivel nivel;
@@ -15,7 +21,13 @@ public class Jugador extends Usuario {
     private ArrayList<Reserva> historial;
 
 
-    // JUGADOR ADULTO CON ID (Leído de la BD)
+    /**
+     * Crea un jugador adulto con un id ya conocido. Se usa al leerlo de la base de datos.
+     *
+     * @param esSocio true si es socio del club; los socios tienen descuento en la tarifa
+     * @param nivel nivel de juego
+     * @param categoria categoría en la que compite
+     */
     public Jugador(int id, String nombre, String dni, LocalDate fechaNacimiento,
                    String domicilio, String telefono, String email, String username,
                    String passwordHash, boolean esSocio, Nivel nivel, String categoria) {
@@ -28,14 +40,11 @@ public class Jugador extends Usuario {
         this.historial = new ArrayList<>();
     }
 
-    // JUGADOR ADULTO SIN ID (Nuevo en la app)
-    public Jugador(String nombre, String dni, LocalDate fechaNacimiento,
-                   String domicilio, String telefono, String email, String username,
-                   String passwordHash, boolean esSocio, Nivel nivel, String categoria) {
-        this(0, nombre, dni, fechaNacimiento, domicilio, telefono, email, username, passwordHash, esSocio, nivel, categoria);
-    }
-
-    // JUGADOR MENOR CON ID (Leído de la BD)
+    /**
+     * Crea un jugador menor de edad con un id ya conocido. No recibe credenciales.
+     *
+     * @param responsable jugador adulto que responde por las reservas del menor
+     */
     public Jugador(int id, String nombre, String dni, LocalDate fechaNacimiento,
                    String domicilio, String telefono, String email,
                    boolean esSocio, Nivel nivel, String categoria, Jugador responsable) {
@@ -48,27 +57,49 @@ public class Jugador extends Usuario {
         this.historial = new ArrayList<>();
     }
 
+    /**
+     * Crea un jugador adulto nuevo, todavía sin guardar.
+     */
+    public Jugador(String nombre, String dni, LocalDate fechaNacimiento,
+                   String domicilio, String telefono, String email, String username,
+                   String passwordHash, boolean esSocio, Nivel nivel, String categoria) {
+        this(0, nombre, dni, fechaNacimiento, domicilio, telefono, email, username, passwordHash, esSocio, nivel, categoria);
+    }
 
-    // JUGADOR MENOR SIN ID (Nuevo en la app)
+    /**
+     * Crea un jugador menor de edad nuevo, todavía sin guardar.
+     */
     public Jugador(String nombre, String dni, LocalDate fechaNacimiento,
                    String domicilio, String telefono, String email,
                    boolean esSocio, Nivel nivel, String categoria, Jugador responsable) {
         this(0, nombre, dni, fechaNacimiento, domicilio, telefono, email, esSocio, nivel, categoria, responsable);
     }
+
+    /**
+     * @return los permisos de un jugador adulto (consultar disponibilidad, reservar,
+     *         cancelar y ver su historial); lista vacía si es menor
+     */
     @Override
     public List<String> getPermisos() {
         if (this.esMenor()) {
-            // Los menores están registrados pero no tienen acceso al sistema
             return new ArrayList<>();
         }
-        // Jugador adulto con credenciales
         return Arrays.asList("CONSULTAR_DISPONIBILIDAD", "RESERVAR_CANCHA", "CANCELAR_RESERVA", "VER_HISTORIAL");
     }
 
+    /**
+     * Suma una cancelación tardía al jugador.
+     * La llama la reserva cuando su titular cancela con menos anticipación que la exigida.
+     */
     public void marcarCancelacionTardia() {
         this.cancelacionesTardias++;
     }
 
+    /**
+     * Agrega una reserva al historial de turnos del jugador.
+     *
+     * @param reserva reserva a registrar
+     */
     public void agregarReservaAlHistorial(Reserva reserva) {
         this.historial.add(reserva);
     }
