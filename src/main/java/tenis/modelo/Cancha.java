@@ -2,11 +2,16 @@ package tenis.modelo;
 
 import tenis.enums.Superficie;
 import tenis.excepciones.ElementoNoEncontradoException;
+import tenis.excepciones.DatosInvalidosException;
 import tenis.gestor.Repositorio;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Espacio de juego de un club, con un tipo de superficie y, opcionalmente, iluminación.
+ * Guarda los bloqueos que impiden reservarla en ciertos períodos.
+ */
 public class Cancha {
     private int id;
     private int numero;
@@ -15,7 +20,12 @@ public class Cancha {
     private Club club;
     private Repositorio<Bloqueo> bloqueos;
 
-    // Constructor
+    /**
+     * @param numero número con el que el club identifica la cancha
+     * @param superficie polvo de ladrillo o cemento
+     * @param tieneLuz true si la cancha tiene iluminación
+     * @param club club al que pertenece
+     */
     public Cancha(int id, int numero, Superficie superficie, boolean tieneLuz, Club club) {
         this.id = id;
         this.numero = numero;
@@ -25,7 +35,13 @@ public class Cancha {
         this.bloqueos = new Repositorio<>();
     }
 
-    // Método verificar si está bloqueada en un rango de tiempo
+    /**
+     * Indica si la cancha tiene algún bloqueo que se superponga con un período.
+     *
+     * @param desde inicio del período a consultar
+     * @param hasta fin del período a consultar
+     * @return true si al menos un bloqueo se superpone con ese período
+     */
     public boolean estaBloqueada(LocalDateTime desde, LocalDateTime hasta) {
         for (Bloqueo bloqueo : this.bloqueos.listar()) {
             if (bloqueo.seSuperpone(desde, hasta)) {
@@ -35,12 +51,22 @@ public class Cancha {
         return false;
     }
 
-    // Método para agregar un bloqueo a la cancha
+    /**
+     * Agrega un bloqueo a la cancha.
+     *
+     * @param bloqueo bloqueo a agregar
+     * @throws DatosInvalidosException si la cancha ya tiene un bloqueo con ese id
+     */
     public void agregarBloqueo(Bloqueo bloqueo) {
         this.bloqueos.agregar(bloqueo);
     }
 
-    // Método para eliminar un bloqueo
+    /**
+     * Elimina un bloqueo a una cancha.
+     *
+     * @param idBloqueo identificador del bloqueo a eliminar
+     * @throws ElementoNoEncontradoException si la cancha no tiene un bloqueo con ese id
+     */
     public void eliminarBloqueo(int idBloqueo) throws ElementoNoEncontradoException {
         this.bloqueos.eliminar(idBloqueo);
     }

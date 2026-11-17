@@ -5,6 +5,10 @@ import tenis.interfaces.Identificable;
 
 import java.time.LocalDateTime;
 
+/**
+ * Período en el que una cancha no puede reservarse por un motivo particular:
+ * mantenimiento, torneo o clases.
+ */
 public class Bloqueo implements Identificable {
     private int id;
     private MotivoBloqueo motivo;
@@ -12,7 +16,12 @@ public class Bloqueo implements Identificable {
     private LocalDateTime hasta;
     private String detalle;
 
-    // Constructor
+    /**
+     * @param motivo causa del bloqueo
+     * @param desde inicio del bloqueo
+     * @param hasta fin del bloqueo
+     * @param detalle texto libre que amplía el motivo
+     */
     public Bloqueo(int id, MotivoBloqueo motivo, LocalDateTime desde, LocalDateTime hasta, String detalle) {
         this.id = id;
         this.motivo = motivo;
@@ -21,6 +30,15 @@ public class Bloqueo implements Identificable {
         this.detalle = detalle;
     }
 
+    /**
+     * Indica si el bloqueo se superpone con un período.
+     * Dos períodos se superponen si cada uno empieza antes de que termine el otro.
+     * Un período que empieza justo cuando termina el bloqueo no se superpone.
+     *
+     * @param inicio inicio del período a consultar
+     * @param fin fin del período a consultar
+     * @return true si hay superposición
+     */
     public boolean seSuperpone(LocalDateTime inicio, LocalDateTime fin) {
         // Un intervalo (inicio, fin) se superpone con (desde, hasta) si:
         // el inicio es antes de que termine el bloqueo Y el fin es después de que empiece el bloqueo.
