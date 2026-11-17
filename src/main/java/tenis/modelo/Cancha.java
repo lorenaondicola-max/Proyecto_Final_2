@@ -115,4 +115,10 @@ public class Cancha {
     public List<Bloqueo> getBloqueos() {
         return bloqueos.listar();
     }
+
+    @Override
+    public String toString() {
+        return "Cancha " + numero + " (id " + id + ") de " + club.getNombre()
+                + ": " + superficie + (tieneLuz ? ", con luz" : ", sin luz");
+    }
 }

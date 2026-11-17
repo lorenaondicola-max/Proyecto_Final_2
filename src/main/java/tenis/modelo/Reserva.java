@@ -192,4 +192,15 @@ public class Reserva implements Cancelable, Tarifable {
     public void setAsistio(boolean asistio) { this.asistio = asistio; }
 
     public ArrayList<Extra> getExtras() { return extras; }
+
+    @Override
+    public String toString() {
+        String texto = "Reserva id " + id + ": cancha " + cancha.getNumero()
+                + ", jugador " + jugador.getNombre()
+                + ", de " + inicio + " a " + fin + ", " + estado;
+        if (titular != null && titular.getId() != jugador.getId()) {
+            texto += " (titular: " + titular.getNombre() + ")";
+        }
+        return texto;
+    }
 }

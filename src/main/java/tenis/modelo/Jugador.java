@@ -122,4 +122,10 @@ public class Jugador extends Usuario {
 
     public ArrayList<Reserva> getHistorial() { return historial; }
     public void setHistorial(ArrayList<Reserva> historial) { this.historial = historial; }
+
+    @Override
+    public String toString() {
+        return "Jugador id " + id + ": " + nombre + ", DNI " + dni + ", nivel " + nivel
+                + (esMenor() && responsable != null ? " (menor, responsable: " + responsable.getNombre() + ")" : "");
+    }
 }
