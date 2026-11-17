@@ -52,6 +52,6 @@ public interface DAO<T> {
      * @throws AccesoDatosException si falla la comunicación con la base
      * @throws ElementoNoEncontradoException si no existe una entidad con ese id
      */
-    
+
     void eliminar(int id) throws AccesoDatosException, ElementoNoEncontradoException;
 }
