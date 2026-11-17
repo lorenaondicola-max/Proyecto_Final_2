@@ -2,14 +2,12 @@ package tenis.dao;
 
 import tenis.config.ConexionDB;
 import tenis.enums.EstadoReserva;
+import tenis.enums.TipoExtra;
 import tenis.enums.TipoJuego;
 import tenis.excepciones.AccesoDatosException;
 import tenis.excepciones.ElementoNoEncontradoException;
 import tenis.interfaces.DAO;
-import tenis.modelo.Cancha;
-import tenis.modelo.Extra;
-import tenis.modelo.Jugador;
-import tenis.modelo.Reserva;
+import tenis.modelo.*;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -20,17 +18,16 @@ import java.util.List;
  * Acceso a datos de las reservas.
  * Usa dos tablas: {@code reservas} para el turno y {@code reserva_extras} para sus extras.
  * Al leer una reserva carga también su cancha, su jugador y su titular con los otros DAO.
- * De cada extra se guardan solo el id y el precio unitario: el tipo de extra
- * y sus cantidades no se guardan.
+ * De cada extra se guardan su tipo, su precio unitario y los datos propios
+ * de su subclase; al leerlo se reconstruye la subclase correcta.
  */
-
 public class ReservaDAO implements DAO<Reserva> {
 
 
     private static final String SQL_INSERTAR = "INSERT INTO reservas (cancha_id, jugador_id, titular_id, inicio, fin, tipo_juego, estado, cargo_cancelacion, asistio) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String SQL_INSERTAR_EXTRA = "INSERT INTO reserva_extras (id, reserva_id, precio_unitario) VALUES (?, ?, ?)";
+    private static final String SQL_INSERTAR_EXTRA = "INSERT INTO reserva_extras (reserva_id, tipo, precio_unitario, cantidad, profesor, duracion_min) VALUES (?, ?, ?, ?, ?, ?)";
     private static final String SQL_ELIMINAR_EXTRAS = "DELETE FROM reserva_extras WHERE reserva_id = ?";
-    private static final String SQL_LISTAR_EXTRAS = "SELECT id, precio_unitario FROM reserva_extras WHERE reserva_id = ?";
+    private static final String SQL_LISTAR_EXTRAS = "SELECT * FROM reserva_extras WHERE reserva_id = ?";
 
     private static final String SQL_LISTAR = "SELECT * FROM reservas ORDER BY inicio";
     private static final String SQL_BUSCAR = "SELECT * FROM reservas WHERE id = ?";
@@ -48,7 +45,6 @@ public class ReservaDAO implements DAO<Reserva> {
      * @param r reserva a guardar
      * @throws AccesoDatosException si falla el guardado de la reserva o de algún extra
      */
-
     @Override
     public void insertar(Reserva r) throws AccesoDatosException {
 
@@ -85,14 +81,8 @@ public class ReservaDAO implements DAO<Reserva> {
 
         if (r.getExtras() != null && !r.getExtras().isEmpty()) {
             for (Extra extra : r.getExtras()) {
-                try (Connection con = ConexionDB.getConexion();
-                     PreparedStatement psExtra = con.prepareStatement(SQL_INSERTAR_EXTRA)) {
-
-                    psExtra.setInt(1, extra.getId());
-                    psExtra.setInt(2, r.getId()); // 👈 Acá ahora usa el ID real de la reserva (ej: 1)
-                    psExtra.setDouble(3, extra.getPrecioUnitario());
-
-                    psExtra.executeUpdate();
+                try {
+                    insertarExtra(extra, r.getId());
                 } catch (SQLException e) {
                     throw new AccesoDatosException("Error al insertar los extras de la reserva", e);
                 }
@@ -140,7 +130,6 @@ public class ReservaDAO implements DAO<Reserva> {
      * @throws AccesoDatosException si falla alguna de las operaciones
      * @throws ElementoNoEncontradoException si no existe una reserva con ese id
      */
-
     @Override
     public void actualizar(Reserva r) throws AccesoDatosException, ElementoNoEncontradoException {
         // Reserva principal
@@ -184,14 +173,10 @@ public class ReservaDAO implements DAO<Reserva> {
 
         if (r.getExtras() != null && !r.getExtras().isEmpty()) {
             for (Extra extra : r.getExtras()) {
-                try (Connection con = ConexionDB.getConexion();
-                     PreparedStatement psExtra = con.prepareStatement(SQL_INSERTAR_EXTRA)) {
-                    psExtra.setInt(1, extra.getId());
-                    psExtra.setInt(2, r.getId());
-                    psExtra.setDouble(3, extra.getPrecioUnitario());
-                    psExtra.executeUpdate();
+                try {
+                    insertarExtra(extra, r.getId());
                 } catch (SQLException e) {
-                    throw new AccesoDatosException("Error al actualizar los extras de la reserva ID: " + r.getId(), e);
+                    throw new AccesoDatosException("Error al insertar los extras de la reserva", e);
                 }
             }
         }
@@ -204,7 +189,6 @@ public class ReservaDAO implements DAO<Reserva> {
      * @throws AccesoDatosException si falla alguna de las operaciones
      * @throws ElementoNoEncontradoException si no existe una reserva con ese id
      */
-
     @Override
     public void eliminar(int id) throws AccesoDatosException, ElementoNoEncontradoException {
         // Borramos primero los extras asociados para evitar problemas de clave foránea
@@ -235,13 +219,12 @@ public class ReservaDAO implements DAO<Reserva> {
      * Arma una reserva a partir de la fila actual del resultado.
      * Carga la cancha, el jugador y el titular por sus ids, restaura el estado,
      * el cargo de cancelación y la asistencia, y agrega los extras guardados.
-     * Cada extra se reconstruye con su id y su precio unitario, que es también su costo.
+     * Cada extra se reconstruye como la subclase que indica su tipo.
      *
      * @param rs resultado posicionado en la fila a leer
      * @return la reserva reconstruida
      * @throws SQLException si falla la lectura o no se puede cargar algún objeto asociado
      */
-
     private Reserva crearReserva(ResultSet rs) throws SQLException {
         int id = rs.getInt("id");
         int canchaId = rs.getInt("cancha_id");
@@ -279,17 +262,7 @@ public class ReservaDAO implements DAO<Reserva> {
             psExtras.setInt(1, id);
             try (ResultSet rsExtras = psExtras.executeQuery()) {
                 while (rsExtras.next()) {
-                    int extraId = rsExtras.getInt("id");
-                    double precioUnitario = rsExtras.getDouble("precio_unitario");
-
-                    Extra extra = new Extra(extraId, precioUnitario, reserva) {
-                        @Override
-                        public double calcularCosto() {
-                            return this.precioUnitario; // O el cálculo que corresponda
-                        }
-                    };
-
-                    reserva.agregarExtra(extra);
+                    reserva.agregarExtra(crearExtra(rsExtras, reserva));
                 }
             }
         } catch (SQLException e) {
@@ -297,5 +270,61 @@ public class ReservaDAO implements DAO<Reserva> {
         }
 
         return reserva;
+    }
+
+    /**
+     * Arma un extra a partir de la fila actual del resultado.
+     * Lee el tipo guardado y construye la subclase que corresponde,
+     * con sus datos propios.
+     *
+     * @param rs resultado posicionado en la fila del extra
+     * @param reserva reserva a la que pertenece el extra
+     * @return el extra reconstruido, de la subclase indicada por su tipo
+     * @throws SQLException si falta alguna columna o falla la lectura
+     */
+    private Extra crearExtra(ResultSet rs, Reserva reserva) throws SQLException {
+        int id = rs.getInt("id");
+        double precio = rs.getDouble("precio_unitario");
+        TipoExtra tipo = TipoExtra.valueOf(rs.getString("tipo"));
+
+        return switch (tipo) {
+            case RAQUETA -> new Raqueta(id, precio, reserva, rs.getInt("cantidad"));
+            case PELOTAS -> new Pelotas(id, precio, reserva, rs.getInt("cantidad"));
+            case ILUMINACION -> new Iluminacion(id, precio, reserva);
+            case CLASE -> new ClaseConProfesor(id, precio, reserva,
+                    rs.getString("profesor"), rs.getInt("duracion_min"));
+        };
+    }
+
+    /**
+     * Guarda un extra de una reserva.
+     * Registra el tipo y el precio unitario, y completa solo la columna propia
+     * de la subclase: cantidad para raquetas y pelotas; profesor y duración
+     * para la clase con profesor. Las demás columnas quedan en NULL.
+     *
+     * @param extra extra a guardar
+     * @param reservaId id de la reserva a la que pertenece
+     * @throws SQLException si falla la comunicación con la base
+     */
+    private void insertarExtra(Extra extra, int reservaId) throws SQLException {
+        try (Connection con = ConexionDB.getConexion();
+             PreparedStatement ps = con.prepareStatement(SQL_INSERTAR_EXTRA)) {
+            ps.setInt(1, reservaId);
+            ps.setString(2, extra.getTipo().name());
+            ps.setDouble(3, extra.getPrecioUnitario());
+            ps.setNull(4, Types.INTEGER);
+            ps.setNull(5, Types.VARCHAR);
+            ps.setNull(6, Types.INTEGER);
+
+            if (extra instanceof Raqueta r) {
+                ps.setInt(4, r.getCantidad());
+            } else if (extra instanceof Pelotas p) {
+                ps.setInt(4, p.getCantidadTubos());
+            } else if (extra instanceof ClaseConProfesor c) {
+                ps.setString(5, c.getProfesor());
+                ps.setInt(6, c.getDuracionMin());
+            }
+            ps.executeUpdate();
+        }
     }
 }

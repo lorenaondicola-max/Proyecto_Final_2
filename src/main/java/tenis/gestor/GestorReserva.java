@@ -14,7 +14,6 @@ import java.util.List;
  * Operaciones sobre las reservas.
  * Antes de guardar una reserva nueva verifica que la cancha esté libre en ese horario.
  */
-
 public class GestorReserva {
 
     private final DAO<Reserva> dao = new ReservaDAO();
@@ -27,7 +26,6 @@ public class GestorReserva {
      * @throws AccesoDatosException si falla la comunicación con la base
      * @throws ElementoNoEncontradoException si no existe una reserva con ese id
      */
-
     public Reserva buscarEnBD(int id) throws AccesoDatosException, ElementoNoEncontradoException {
         // Al buscar por ID, el DAO ya se encarga de instanciar la reserva y cargarle sus extras
         return dao.buscarPorId(id);
@@ -37,7 +35,6 @@ public class GestorReserva {
      * @return todos los reservas guardadas
      * @throws AccesoDatosException si falla la comunicación con la base
      */
-
     public List<Reserva> listarDesdeBD() throws AccesoDatosException {
         // Retorna todas las reservas, cada una con su respectiva lista de extras cargada
         return dao.listarTodos();
@@ -49,7 +46,6 @@ public class GestorReserva {
      * @param r reserva a guardar
      * @throws AccesoDatosException si falla la comunicación con la base
      */
-
     public void guardarEnBD(Reserva r) throws AccesoDatosException, TurnoNoDisponibleException {
         // Inserta la reserva y recorre su lista de extras para guardarlos en la tabla secundaria
         List<Reserva> existentes = dao.listarTodos();
@@ -68,7 +64,6 @@ public class GestorReserva {
      * @throws AccesoDatosException si falla la comunicación con la base
      * @throws ElementoNoEncontradoException si no existe una reserva con ese id
      */
-
     public void actualizarEnBD(Reserva r) throws AccesoDatosException, ElementoNoEncontradoException {
         // Actualiza los datos de la reserva y sincroniza (borra e reinserta) sus extras
         dao.actualizar(r);
@@ -81,7 +76,6 @@ public class GestorReserva {
      * @throws AccesoDatosException si falla la comunicación con la base
      * @throws ElementoNoEncontradoException si no existe una reserva con ese id
      */
-
     public void eliminarDeBD(int id) throws AccesoDatosException, ElementoNoEncontradoException {
         // Borra los extras asociados y luego elimina la reserva principal
         dao.eliminar(id);
@@ -96,7 +90,6 @@ public class GestorReserva {
      * @throws AccesoDatosException si falla la comunicación con la base
      * @throws ElementoNoEncontradoException si no existe una reserva con ese id
      */
-
     public void agregarExtraAReserva(int reservaId, Extra extra) throws AccesoDatosException, ElementoNoEncontradoException {
         // Traemos la reserva de la base de datos
         Reserva reserva = buscarEnBD(reservaId);
