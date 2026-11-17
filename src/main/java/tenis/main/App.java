@@ -10,10 +10,7 @@ import tenis.gestor.GestorJugador;
 import tenis.gestor.GestorReserva;
 import tenis.modelo.*;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,15 +34,16 @@ public class App {
                 switch (opcion) {
                     case 1 -> cargarDatos();
                     case 2 -> listarCanchas();
-                    case 3 -> listarJugadores();
-                    case 4 -> registrarReserva();
-                    case 5 -> listarReservas();
-                    case 6 -> cancelarReserva();
+                    case 3 -> altaJugador();
+                    case 4 -> listarJugadores();
+                    case 5 -> registrarReserva();
+                    case 6 -> listarReservas();
+                    case 7 -> cancelarReserva();
                     case 0 -> System.out.println("Hasta luego.");
                     default -> System.out.println("Opción inválida.");
                 }
             } catch (TurnoNoDisponibleException | CanchaBloqueadaException | MenorSinResponsableException e) {
-            System.out.println("No se pudo reservar: " + e.getMessage());
+            System.out.println("Operación rechazada: " + e.getMessage());
             } catch (ElementoNoEncontradoException e) {
                 System.out.println("No encontrado: " + e.getMessage());
             } catch (AccesoDatosException e) {
@@ -60,10 +58,11 @@ public class App {
         System.out.println("\n=== SISTEMA DE TURNOS DE TENIS ===");
         System.out.println("1. Cargar datos de prueba");
         System.out.println("2. Listar canchas");
-        System.out.println("3. Listar jugadores");
-        System.out.println("4. Registrar reserva");
-        System.out.println("5. Listar reservas");
-        System.out.println("6. Cancelar reserva");
+        System.out.println("3. Registrar nuevo jugador");
+        System.out.println("4. Listar jugadores");
+        System.out.println("5. Registrar reserva");
+        System.out.println("6. Listar reservas");
+        System.out.println("7. Cancelar reserva");
         System.out.println("0. Salir");
     }
 
@@ -172,6 +171,48 @@ public class App {
         }
     }
 
+    private static void altaJugador() throws AccesoDatosException, ElementoNoEncontradoException,
+            MenorSinResponsableException {
+        String nombre = leerTexto("Nombre y apellido: ");
+        String dni = leerTexto("DNI: ");
+        for (Jugador j : gestorJugador.listarTodos()) {
+            if (j.getDni().equals(dni)) {
+                throw new DatosInvalidosException("Ya existe un jugador con DNI " + dni);
+            }
+        }
+        LocalDate nacimiento = leerFecha("Fecha de nacimiento (AAAA-MM-DD): ");
+        if (nacimiento.isAfter(LocalDate.now())) {
+            throw new DatosInvalidosException("La fecha de nacimiento no puede ser futura");
+        }
+        String domicilio = leerTexto("Domicilio: ");
+        String telefono = leerTexto("Teléfono: ");
+        String email = leerTexto("Email: ");
+        boolean esSocio = leerEntero("¿Es socio? 1 = Sí, 2 = No: ") == 1;
+        Nivel nivel = leerNivel();
+        String categoria = leerTexto("Categoría: ");
+
+        Jugador nuevo;
+        boolean esMenor = Period.between(nacimiento, LocalDate.now()).getYears() < 18;
+        if (esMenor) {
+            System.out.println("El jugador es menor de edad: hay que asignarle un responsable.");
+            listarJugadores();
+            Jugador responsable = gestorJugador.buscar(leerEntero("Id del responsable: "));
+            if (responsable.esMenor()) {
+                throw new MenorSinResponsableException("El responsable debe ser mayor de edad");
+            }
+            nuevo = new Jugador(nombre, dni, nacimiento, domicilio, telefono, email,
+                    esSocio, nivel, categoria, responsable);
+        } else {
+            String usuario = leerTexto("Usuario: ");
+            String clave = leerTexto("Clave: ");
+            nuevo = new Jugador(nombre, dni, nacimiento, domicilio, telefono, email,
+                    usuario, clave, esSocio, nivel, categoria);
+        }
+
+        gestorJugador.guardar(nuevo);
+        System.out.println("Jugador registrado: " + nuevo);
+    }
+
     private static void listarJugadores() throws AccesoDatosException {
         List<Jugador> jugadores = gestorJugador.listarTodos();
         if (jugadores.isEmpty()) {
@@ -260,5 +301,28 @@ public class App {
                 System.out.println("Formato inválido. Ejemplo: 10:00");
             }
         }
+    }
+
+    private static String leerTexto(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            String texto = sc.nextLine().trim();
+            if (!texto.isEmpty()) {
+                return texto;
+            }
+            System.out.println("Este dato es obligatorio.");
+        }
+    }
+
+    private static Nivel leerNivel() {
+        Nivel[] niveles = Nivel.values();
+        for (int i = 0; i < niveles.length; i++) {
+            System.out.println((i + 1) + ". " + niveles[i]);
+        }
+        int n = leerEntero("Nivel: ");
+        if (n < 1 || n > niveles.length) {
+            throw new DatosInvalidosException("Nivel inexistente: " + n);
+        }
+        return niveles[n - 1];
     }
 }
