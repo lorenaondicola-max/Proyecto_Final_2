@@ -36,15 +36,32 @@ public class App {
             opcion = leerEntero("Opción: ");
             try {
                 switch (opcion) {
-                    case 1 -> cargarDatos();
-                    case 2 -> listarCanchas();
-                    case 3 -> altaJugador();
-                    case 4 -> listarJugadores();
-                    case 5 -> registrarReserva();
-                    case 6 -> listarReservas();
-                    case 7 -> cancelarReserva();
-                    case 0 -> System.out.println("Hasta luego.");
-                    default -> System.out.println("Opción inválida.");
+                    case 1:
+                        cargarDatos();
+                        break;
+                    case 2:
+                        listarCanchas();
+                        break;
+                    case 3:
+                        altaJugador();
+                        break;
+                    case 4:
+                        listarJugadores();
+                        break;
+                    case 5:
+                        registrarReserva();
+                        break;
+                    case 6:
+                        listarReservas();
+                        break;
+                    case 7:
+                        cancelarReserva();
+                        break;
+                    case 0:
+                        System.out.println("Hasta luego.");
+                        break;
+                    default:
+                        System.out.println("Opción inválida.");
                 }
             } catch (TurnoNoDisponibleException | CanchaBloqueadaException | MenorSinResponsableException e) {
             System.out.println("Operación rechazada: " + e.getMessage());
