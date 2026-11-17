@@ -1,13 +1,24 @@
 package tenis.modelo;
 
+/**
+ *  Venta de pelotas. Se cobra por tubo.
+ */
+
 public class Pelotas extends Extra {
     private int cantidadTubos;
 
+    /**
+     * @param precioUnitario precio de un tubo de pelotas
+     * @param cantidadTubos cantidad de tubos
+     */
     public Pelotas(int id, double precioUnitario, Reserva reserva, int cantidadTubos) {
         super(id, precioUnitario, reserva);
         this.cantidadTubos = cantidadTubos;
     }
 
+    /**
+     * @return precio de un tubo multiplicado por la cantidad de tubos
+     */
     @Override
     public double calcularCosto() {
         return this.precioUnitario * this.cantidadTubos;
