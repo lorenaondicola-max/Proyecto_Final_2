@@ -58,7 +58,7 @@ public class App {
 
     private static void mostrarMenu() {
         System.out.println("\n=== SISTEMA DE TURNOS DE TENIS ===");
-        System.out.println("1. Cargar datos");
+        System.out.println("1. Cargar datos de prueba");
         System.out.println("2. Listar canchas");
         System.out.println("3. Listar jugadores");
         System.out.println("4. Registrar reserva");
