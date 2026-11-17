@@ -19,7 +19,7 @@ public class ClaseConProfesor extends Extra {
         this.profesor = profesor;
         this.duracionMin = duracionMin;
     }
-    
+
     /**
      * @return precio por hora multiplicado por la duración de la clase, pasada de minutos a horas
      */
