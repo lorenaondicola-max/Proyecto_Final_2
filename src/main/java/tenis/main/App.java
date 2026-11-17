@@ -23,6 +23,10 @@ public class App {
     private static final GestorCanchas gestorCancha = new GestorCanchas();
     private static final GestorJugador gestorJugador = new GestorJugador();
     private static final GestorReserva gestorReserva = new GestorReserva();
+    private static final double PRECIO_RAQUETA = 1500.0;
+    private static final double PRECIO_TUBO_PELOTAS = 3000.0;
+    private static final double PRECIO_HORA_LUZ = 500.0;
+    private static final double PRECIO_HORA_CLASE = 15000.0;
     private static Recepcionista recepcionista;
 
     public static void main(String[] args) {
@@ -280,8 +284,38 @@ public class App {
 
         LocalDateTime inicio = LocalDateTime.of(fecha, hora);
         Reserva r = recepcionista.registrarReserva(cancha, jugador, inicio, inicio.plusHours(horas), tipo);
+        agregarExtras(r);
         gestorReserva.guardarEnBD(r);
-        System.out.println("Reserva " + r.getId() + " registrada. Costo: $" + r.calcularCosto());
+        System.out.println("Reserva " + r.getId() + " registrada.");
+        for (Extra extra : r.getExtras()) {
+            System.out.println("  " + extra.getTipo() + ": $" + extra.calcularCosto());
+        }
+        System.out.println("  Total: $" + r.calcularCosto());
+    }
+
+    private static void agregarExtras(Reserva reserva) {
+        int opcion;
+        do {
+            System.out.println("Agregar extra: 1. Raqueta  2. Pelotas  3. Iluminación  4. Clase con profesor  0. Terminar");
+            opcion = leerEntero("Opción: ");
+            switch (opcion) {
+                case 1 -> reserva.agregarExtra(new Raqueta(0, PRECIO_RAQUETA, reserva,
+                        leerCantidad("Cantidad de raquetas: ")));
+                case 2 -> reserva.agregarExtra(new Pelotas(0, PRECIO_TUBO_PELOTAS, reserva,
+                        leerCantidad("Cantidad de tubos: ")));
+                case 3 -> {
+                    if (reserva.getCancha().isTieneLuz()) {
+                        reserva.agregarExtra(new Iluminacion(0, PRECIO_HORA_LUZ, reserva));
+                    } else {
+                        System.out.println("Esa cancha no tiene iluminación.");
+                    }
+                }
+                case 4 -> reserva.agregarExtra(new ClaseConProfesor(0, PRECIO_HORA_CLASE, reserva,
+                        leerTexto("Profesor: "), leerCantidad("Duración de la clase en minutos: ")));
+                case 0 -> { }
+                default -> System.out.println("Opción inválida.");
+            }
+        } while (opcion != 0);
     }
 
     private static void listarReservas() throws AccesoDatosException {
@@ -360,5 +394,15 @@ public class App {
             throw new DatosInvalidosException("Nivel inexistente: " + n);
         }
         return niveles[n - 1];
+    }
+
+    private static int leerCantidad(String mensaje) {
+        while (true) {
+            int n = leerEntero(mensaje);
+            if (n > 0) {
+                return n;
+            }
+            System.out.println("Tiene que ser mayor que cero.");
+        }
     }
 }
