@@ -13,6 +13,13 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Acceso a datos de los clubes, sobre la tabla {@code club}.
+ * La tarifa no tiene tabla propia: sus cinco valores se guardan como columnas del club.
+ * Los días de atención y la lista de canchas no se guardan en esta tabla:
+ * un club leído de la base vuelve con ambas listas vacías.
+ */
+
 public class ClubDAO implements DAO<Club> {
 
     private static final String SQL_INSERTAR = "INSERT INTO club (nombre, direccion, hora_apertura, hora_cierre, inicio_hora_pico, fin_hora_pico, horas_cancelacion, porcentaje_penalizacion, precio_base_hora, recargo_polvo_porcentaje, recargo_pico_porcentaje, recargo_dobles_porcentaje, descuento_socio_porcentaje) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -129,6 +136,14 @@ public class ClubDAO implements DAO<Club> {
             throw new ElementoNoEncontradoException("No se pudo eliminar, no existe el club con ID: " + id);
         }
     }
+
+    /**
+     * Arma un club, con su tarifa, a partir de la fila actual del resultado.
+     *
+     * @param rs resultado posicionado en la fila a leer
+     * @return el club reconstruido
+     * @throws SQLException si falta alguna columna o falla la lectura
+     */
 
     private Club crearClub(ResultSet rs) throws SQLException {
 

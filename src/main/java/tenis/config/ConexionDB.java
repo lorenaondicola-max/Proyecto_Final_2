@@ -29,7 +29,7 @@ public class ConexionDB {
      * @return conexión abierta
      * @throws SQLException si no se puede conectar (servidor apagado, clave incorrecta, base inexistente)
      */
-    
+
     public static Connection getConexion() throws SQLException {
         return DriverManager.getConnection(URL, USUARIO, CLAVE);
     }

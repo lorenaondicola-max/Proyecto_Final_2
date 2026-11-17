@@ -13,6 +13,13 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Acceso a datos de los jugadores, sobre la tabla {@code jugadores}.
+ * El responsable de un menor es otro jugador: la tabla se referencia a sí misma
+ * con la columna {@code responsable_id}, que queda en NULL para los adultos.
+ * La cantidad de cancelaciones tardías y el historial no se guardan.
+ */
+
 public class JugadorDAO implements DAO<Jugador> {
 
     private static final String SQL_INSERTAR = "INSERT INTO jugadores (nombre, dni, fecha_nacimiento, domicilio, telefono, email, username, password_hash, es_socio, nivel, categoria, responsable_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -136,6 +143,17 @@ public class JugadorDAO implements DAO<Jugador> {
             throw new ElementoNoEncontradoException("No se pudo eliminar, no existe el jugador con ID: " + id);
         }
     }
+
+
+    /**
+     * Arma un jugador a partir de la fila actual del resultado.
+     * Si la fila tiene responsable, lo busca en la base y crea al jugador como menor,
+     * sin credenciales; si no lo tiene, lo crea como adulto.
+     *
+     * @param rs resultado posicionado en la fila a leer
+     * @return el jugador reconstruido
+     * @throws SQLException si falla la lectura o no se puede cargar el responsable
+     */
 
     private Jugador crearJugador(ResultSet rs) throws SQLException {
         int id = rs.getInt("id");

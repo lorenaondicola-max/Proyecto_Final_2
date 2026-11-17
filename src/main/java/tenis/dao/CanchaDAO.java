@@ -12,6 +12,12 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Acceso a datos de las canchas, sobre la tabla {@code canchas}.
+ * Cada cancha guarda el id de su club; al leerla, el club se carga con {@link ClubDAO}.
+ * Los bloqueos de una cancha se manejan en memoria y no se guardan.
+ */
+
 public class CanchaDAO implements DAO<Cancha> {
 
     private final ClubDAO clubDAO = new ClubDAO();
@@ -110,6 +116,14 @@ public class CanchaDAO implements DAO<Cancha> {
             throw new ElementoNoEncontradoException("No se pudo eliminar, no existe la cancha con ID: " + id);
         }
     }
+
+    /**
+     * Arma una cancha a partir de la fila actual del resultado y le carga su club.
+     *
+     * @param rs resultado posicionado en la fila a leer
+     * @return la cancha reconstruida, con su club
+     * @throws SQLException si falla la lectura o no se puede cargar el club
+     */
 
     private Cancha crearCancha(ResultSet rs) throws SQLException {
         int id = rs.getInt("id");

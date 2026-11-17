@@ -16,6 +16,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Acceso a datos de las reservas.
+ * Usa dos tablas: {@code reservas} para el turno y {@code reserva_extras} para sus extras.
+ * Al leer una reserva carga también su cancha, su jugador y su titular con los otros DAO.
+ * De cada extra se guardan solo el id y el precio unitario: el tipo de extra
+ * y sus cantidades no se guardan.
+ */
+
 public class ReservaDAO implements DAO<Reserva> {
 
 
@@ -31,6 +39,15 @@ public class ReservaDAO implements DAO<Reserva> {
 
     private final CanchaDAO canchaDAO = new CanchaDAO();
     private final JugadorDAO jugadorDAO = new JugadorDAO();
+
+
+    /**
+     * Guarda la reserva y después cada uno de sus extras.
+     * Le asigna a la reserva el id que genera la base, y con ese id guarda los extras.
+     *
+     * @param r reserva a guardar
+     * @throws AccesoDatosException si falla el guardado de la reserva o de algún extra
+     */
 
     @Override
     public void insertar(Reserva r) throws AccesoDatosException {
@@ -114,6 +131,16 @@ public class ReservaDAO implements DAO<Reserva> {
         throw new ElementoNoEncontradoException("No se encontró la reserva con ID: " + id);
     }
 
+
+    /**
+     * Guarda los cambios de la reserva y reemplaza sus extras:
+     * borra los que estaban guardados y vuelve a insertar los actuales.
+     *
+     * @param r reserva con los datos nuevos
+     * @throws AccesoDatosException si falla alguna de las operaciones
+     * @throws ElementoNoEncontradoException si no existe una reserva con ese id
+     */
+
     @Override
     public void actualizar(Reserva r) throws AccesoDatosException, ElementoNoEncontradoException {
         // Reserva principal
@@ -170,6 +197,14 @@ public class ReservaDAO implements DAO<Reserva> {
         }
     }
 
+    /**
+     * Elimina primero los extras de la reserva y después la reserva.
+     *
+     * @param id identificador de la reserva a eliminar
+     * @throws AccesoDatosException si falla alguna de las operaciones
+     * @throws ElementoNoEncontradoException si no existe una reserva con ese id
+     */
+
     @Override
     public void eliminar(int id) throws AccesoDatosException, ElementoNoEncontradoException {
         // Borramos primero los extras asociados para evitar problemas de clave foránea
@@ -195,6 +230,17 @@ public class ReservaDAO implements DAO<Reserva> {
             throw new ElementoNoEncontradoException("No se pudo eliminar, no existe la reserva con ID: " + id);
         }
     }
+
+    /**
+     * Arma una reserva a partir de la fila actual del resultado.
+     * Carga la cancha, el jugador y el titular por sus ids, restaura el estado,
+     * el cargo de cancelación y la asistencia, y agrega los extras guardados.
+     * Cada extra se reconstruye con su id y su precio unitario, que es también su costo.
+     *
+     * @param rs resultado posicionado en la fila a leer
+     * @return la reserva reconstruida
+     * @throws SQLException si falla la lectura o no se puede cargar algún objeto asociado
+     */
 
     private Reserva crearReserva(ResultSet rs) throws SQLException {
         int id = rs.getInt("id");
