@@ -77,12 +77,15 @@ CREATE TABLE reservas (
 );
 
 CREATE TABLE reserva_extras (
-    id INT NOT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     reserva_id INT NOT NULL,
+    tipo VARCHAR(20) NOT NULL,
     precio_unitario DOUBLE NOT NULL,
-    PRIMARY KEY (id, reserva_id),
-    CONSTRAINT fk_extra_reserva FOREIGN KEY (reserva_id) 
-        REFERENCES reservas(id) 
-        ON DELETE CASCADE 
+    cantidad INT DEFAULT NULL,
+    profesor VARCHAR(100) DEFAULT NULL,
+    duracion_min INT DEFAULT NULL,
+    CONSTRAINT fk_extra_reserva FOREIGN KEY (reserva_id)
+        REFERENCES reservas(id)
+        ON DELETE CASCADE
         ON UPDATE CASCADE
 );
