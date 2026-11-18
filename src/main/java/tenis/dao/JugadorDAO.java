@@ -18,15 +18,15 @@ import java.util.List;
  * Acceso a datos de los jugadores, sobre la tabla {@code jugadores}.
  * El responsable de un menor es otro jugador: la tabla se referencia a sí misma
  * con la columna {@code responsable_id}, que queda en NULL para los adultos.
- * La cantidad de cancelaciones tardías y el historial no se guardan.
+ * También se guarda la cantidad de cancelaciones tardías; el historial no se guarda,
+ * porque se puede obtener de la tabla {@code reservas}.
  */
-
 public class JugadorDAO implements DAO<Jugador> {
 
-    private static final String SQL_INSERTAR = "INSERT INTO jugadores (nombre, dni, fecha_nacimiento, domicilio, telefono, email, username, password_hash, es_socio, nivel, categoria, responsable_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String SQL_INSERTAR = "INSERT INTO jugadores (nombre, dni, fecha_nacimiento, domicilio, telefono, email, username, password_hash, es_socio, nivel, categoria, responsable_id, cancelaciones_tardias) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_LISTAR = "SELECT * FROM jugadores ORDER BY nombre";
     private static final String SQL_BUSCAR = "SELECT * FROM jugadores WHERE id = ?";
-    private static final String SQL_ACTUALIZAR = "UPDATE jugadores SET nombre = ?, dni = ?, fecha_nacimiento = ?, domicilio = ?, telefono = ?, email = ?, username = ?, password_hash = ?, es_socio = ?, nivel = ?, categoria = ?, responsable_id = ? WHERE id = ?";
+    private static final String SQL_ACTUALIZAR = "UPDATE jugadores SET nombre = ?, dni = ?, fecha_nacimiento = ?, domicilio = ?, telefono = ?, email = ?, username = ?, password_hash = ?, es_socio = ?, nivel = ?, categoria = ?, responsable_id = ?, cancelaciones_tardias = ? WHERE id = ?";
     private static final String SQL_ELIMINAR = "DELETE FROM jugadores WHERE id = ?";
 
     @Override
@@ -52,6 +52,7 @@ public class JugadorDAO implements DAO<Jugador> {
             } else {
                 ps.setNull(12, Types.INTEGER);
             }
+            ps.setInt(13, j.getCancelacionesTardias());
 
             ps.executeUpdate();
 
@@ -119,8 +120,9 @@ public class JugadorDAO implements DAO<Jugador> {
             } else {
                 ps.setNull(12, Types.INTEGER);
             }
+            ps.setInt(13, j.getCancelacionesTardias());
 
-            ps.setInt(13, j.getId());
+            ps.setInt(14, j.getId());
             filas = ps.executeUpdate();
         } catch (SQLException e) {
             throw new AccesoDatosException("Error al actualizar el jugador ID: " + j.getId(), e);
@@ -149,7 +151,8 @@ public class JugadorDAO implements DAO<Jugador> {
     /**
      * Arma un jugador a partir de la fila actual del resultado.
      * Si la fila tiene responsable, lo busca en la base y crea al jugador como menor,
-     * sin credenciales; si no lo tiene, lo crea como adulto.
+     * sin credenciales; si no lo tiene, lo crea como adulto. En los dos casos
+     * restaura la cantidad de cancelaciones tardías.
      *
      * @param rs resultado posicionado en la fila a leer
      * @return el jugador reconstruido
@@ -169,12 +172,14 @@ public class JugadorDAO implements DAO<Jugador> {
         boolean esSocio = rs.getBoolean("es_socio");
         Nivel nivel = Nivel.valueOf(rs.getString("nivel"));
         Categoria categoria = Categoria.valueOf(rs.getString("categoria"));
+        int cancelacionesTardias = rs.getInt("cancelaciones_tardias");
 
         int responsableId = rs.getInt("responsable_id");
 
         // Si no hay responsable_id (es NULL), es un jugador adulto
+        Jugador jugador;
         if (rs.wasNull()) {
-            return new Jugador(id, nombre, dni, fechaNacimiento, domicilio, telefono, email,
+            jugador = new Jugador(id, nombre, dni, fechaNacimiento, domicilio, telefono, email,
                     username, passwordHash, esSocio, nivel, categoria);
         } else {
             // Si tiene responsable_id, se trata de un jugador menor de edad
@@ -184,8 +189,10 @@ public class JugadorDAO implements DAO<Jugador> {
             } catch (AccesoDatosException | ElementoNoEncontradoException e) {
                 throw new SQLException("No se pudo cargar el responsable con ID: " + responsableId, e);
             }
-            return new Jugador(id, nombre, dni, fechaNacimiento, domicilio, telefono, email,
+            jugador = new Jugador(id, nombre, dni, fechaNacimiento, domicilio, telefono, email,
                     esSocio, nivel, categoria, responsable);
         }
+        jugador.setCancelacionesTardias(cancelacionesTardias);
+        return jugador;
     }
 }

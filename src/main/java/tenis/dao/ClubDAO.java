@@ -16,16 +16,16 @@ import java.util.List;
 /**
  * Acceso a datos de los clubes, sobre la tabla {@code club}.
  * La tarifa no tiene tabla propia: sus cinco valores se guardan como columnas del club.
- * Los días de atención y la lista de canchas no se guardan en esta tabla:
- * un club leído de la base vuelve con ambas listas vacías.
+ * Los días de atención se guardan en una sola columna, como texto separado por comas
+ * (por ejemplo {@code MONDAY,TUESDAY}). La lista de canchas no se carga: las canchas
+ * de un club se consultan con {@link CanchaDAO}.
  */
-
 public class ClubDAO implements DAO<Club> {
 
-    private static final String SQL_INSERTAR = "INSERT INTO club (nombre, direccion, hora_apertura, hora_cierre, inicio_hora_pico, fin_hora_pico, horas_cancelacion, porcentaje_penalizacion, precio_base_hora, recargo_polvo_porcentaje, recargo_pico_porcentaje, recargo_dobles_porcentaje, descuento_socio_porcentaje) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String SQL_INSERTAR = "INSERT INTO club (nombre, direccion, hora_apertura, hora_cierre, inicio_hora_pico, fin_hora_pico, horas_cancelacion, porcentaje_penalizacion, precio_base_hora, recargo_polvo_porcentaje, recargo_pico_porcentaje, recargo_dobles_porcentaje, descuento_socio_porcentaje, dias_atencion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_LISTAR = "SELECT * FROM club";
     private static final String SQL_BUSCAR = "SELECT * FROM club WHERE id = ?";
-    private static final String SQL_ACTUALIZAR = "UPDATE club SET nombre = ?, direccion = ?, hora_apertura = ?, hora_cierre = ?, inicio_hora_pico = ?, fin_hora_pico = ?, horas_cancelacion = ?, porcentaje_penalizacion = ?, precio_base_hora = ?, recargo_polvo_porcentaje = ?, recargo_pico_porcentaje = ?, recargo_dobles_porcentaje = ?, descuento_socio_porcentaje = ? WHERE id = ?";
+    private static final String SQL_ACTUALIZAR = "UPDATE club SET nombre = ?, direccion = ?, hora_apertura = ?, hora_cierre = ?, inicio_hora_pico = ?, fin_hora_pico = ?, horas_cancelacion = ?, porcentaje_penalizacion = ?, precio_base_hora = ?, recargo_polvo_porcentaje = ?, recargo_pico_porcentaje = ?, recargo_dobles_porcentaje = ?, descuento_socio_porcentaje = ?, dias_atencion = ? WHERE id = ?";
     private static final String SQL_ELIMINAR = "DELETE FROM club WHERE id = ?";
 
     @Override
@@ -46,6 +46,7 @@ public class ClubDAO implements DAO<Club> {
             ps.setDouble(11, c.getTarifa().getRecargoPicoPorcentaje());
             ps.setDouble(12, c.getTarifa().getRecargoDoblesPorcentaje());
             ps.setDouble(13, c.getTarifa().getDescuentoSocioPorcentaje());
+            ps.setString(14, diasATexto(c.getDiasAtencion()));
 
             ps.executeUpdate();
 
@@ -110,8 +111,9 @@ public class ClubDAO implements DAO<Club> {
             ps.setDouble(11, c.getTarifa().getRecargoPicoPorcentaje());
             ps.setDouble(12, c.getTarifa().getRecargoDoblesPorcentaje());
             ps.setDouble(13, c.getTarifa().getDescuentoSocioPorcentaje());
+            ps.setString(14, diasATexto(c.getDiasAtencion()));
 
-            ps.setInt(14, c.getId());
+            ps.setInt(15, c.getId());
 
             filas = ps.executeUpdate();
         } catch (SQLException e) {
@@ -144,7 +146,6 @@ public class ClubDAO implements DAO<Club> {
      * @return el club reconstruido
      * @throws SQLException si falta alguna columna o falla la lectura
      */
-
     private Club crearClub(ResultSet rs) throws SQLException {
 
         int id = rs.getInt("id");
@@ -164,9 +165,41 @@ public class ClubDAO implements DAO<Club> {
         double descuentoSocio = rs.getDouble("descuento_socio_porcentaje");
 
         Tarifa tarifa = new Tarifa(precioBase, recargoPolvo, recargoPico, recargoDobles, descuentoSocio);
+        ArrayList<DayOfWeek> dias = textoADias(rs.getString("dias_atencion"));
 
-        Club club = new Club(id, nombre, direccion, horaApertura, horaCierre, inicioPico, finPico, new ArrayList<>(), horasCancelacion, porcentajePenalizacion, tarifa);
+        Club club = new Club(id, nombre, direccion, horaApertura, horaCierre, inicioPico, finPico, dias, horasCancelacion, porcentajePenalizacion, tarifa);
 
         return club;
+    }
+
+    /**
+     * Convierte la lista de días de atención en el texto que se guarda en la base.
+     *
+     * @param dias días de atención del club
+     * @return los nombres de los días separados por coma; texto vacío si no hay días
+     */
+    private String diasATexto(List<DayOfWeek> dias) {
+        List<String> nombres = new ArrayList<>();
+        for (DayOfWeek dia : dias) {
+            nombres.add(dia.name());
+        }
+        return String.join(",", nombres);
+    }
+
+    /**
+     * Convierte el texto guardado en la base en la lista de días de atención.
+     *
+     * @param texto nombres de los días separados por coma
+     * @return los días de atención; lista vacía si el texto está vacío
+     */
+    private ArrayList<DayOfWeek> textoADias(String texto) {
+        ArrayList<DayOfWeek> dias = new ArrayList<>();
+        if (texto == null || texto.isBlank()) {
+            return dias;
+        }
+        for (String nombre : texto.split(",")) {
+            dias.add(DayOfWeek.valueOf(nombre.trim()));
+        }
+        return dias;
     }
 }
