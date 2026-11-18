@@ -178,7 +178,7 @@ public class App {
                 "pass1234",
                 false,
                 Nivel.PRINCIPIANTE,
-                Categoria.TERCERA
+                Categoria.SEXTA
         );
         gestorJugador.guardar(adulto2);
         System.out.println("Jugador adulto guardado: " + adulto2.getNombre());
@@ -353,6 +353,107 @@ public class App {
 
     private static void registrarReserva() throws AccesoDatosException, ElementoNoEncontradoException,
             TurnoNoDisponibleException, CanchaBloqueadaException, MenorSinResponsableException {
+
+        if (recepcionista == null) {
+            System.out.println("Primero cargá los datos (opción 1).");
+            return;
+        }
+
+        // 1. Cancha (reintenta si el ID no existe)
+        Cancha cancha;
+        while (true) {
+            listarCanchas();
+            int idCancha = leerEntero("Id de cancha: ");
+            cancha = gestorCancha.buscar(idCancha);
+            if (cancha != null) {
+                break;
+            }
+            System.out.println("Error: No se encontró una cancha con el ID " + idCancha + ". Intente nuevamente.");
+        }
+
+        // 2. Jugador (reintenta si el ID no existe)
+        Jugador jugador;
+        while (true) {
+            listarJugadores();
+            int idJugador = leerEntero("Id de jugador: ");
+            jugador = gestorJugador.buscar(idJugador);
+            if (jugador != null) {
+                break;
+            }
+            System.out.println("Error: No se encontró un jugador con el ID " + idJugador + ". Intente nuevamente.");
+        }
+
+        // 3. Fecha (reintenta si es una fecha en el pasado)
+        LocalDate fecha;
+        while (true) {
+            fecha = leerFecha("Fecha (AAAA-MM-DD): ");
+            if (!fecha.isBefore(LocalDate.now())) {
+                break;
+            }
+            System.out.println("Error: La fecha de la reserva no puede ser en el pasado. Intente nuevamente.");
+        }
+
+        // 4. Hora de inicio
+        LocalTime hora = leerHora("Hora de inicio (HH:MM): ");
+
+        // 5. Duración en horas (reintenta si ingresa 0 o un número negativo)
+        int horas;
+        while (true) {
+            horas = leerEntero("Duración en horas: ");
+            if (horas > 0) {
+                break;
+            }
+            System.out.println("Error: La duración debe ser de al menos 1 hora. Intente nuevamente.");
+        }
+
+        // 6. Tipo de juego (reintenta si ingresa algo distinto de 1 o 2)
+        TipoJuego tipo;
+        while (true) {
+            int opcionTipo = leerEntero("1 = Singles, 2 = Dobles: ");
+            if (opcionTipo == 1) {
+                tipo = TipoJuego.SINGLES;
+                break;
+            } else if (opcionTipo == 2) {
+                tipo = TipoJuego.DOBLES;
+                break;
+            }
+            System.out.println("Error: Opción inválida. Ingrese 1 para Singles o 2 para Dobles.");
+        }
+
+        // Procesar la reserva
+        LocalDateTime inicio = LocalDateTime.of(fecha, hora);
+        Reserva r = recepcionista.registrarReserva(cancha, jugador, inicio, inicio.plusHours(horas), tipo);
+        agregarExtras(r);
+        gestorReserva.guardarEnBD(r);
+
+        // Mostrar el resumen completo de la reserva registrada
+        System.out.println("\n==========================================");
+        System.out.println("   ¡RESERVA REGISTRADA CON ÉXITO! (#" + r.getId() + ")");
+        System.out.println("==========================================");
+        System.out.println(" Cancha: " + cancha);
+        System.out.println(" Jugador: " + jugador);
+        System.out.println(" Fecha y Hora de Inicio: " + inicio);
+        System.out.println(" Duración: " + horas + " hora(s)");
+        System.out.println(" Tipo de Juego: " + tipo);
+
+        System.out.println("------------------------------------------");
+        System.out.println("  Extras contratados:");
+        if (r.getExtras() != null && !r.getExtras().isEmpty()) {
+            for (Extra extra : r.getExtras()) {
+                System.out.println("  • " + extra.getTipo() + ": $" + extra.calcularCosto());
+            }
+        } else {
+            System.out.println("  • Sin extras adicionales.");
+        }
+
+        System.out.println("------------------------------------------");
+        System.out.println("  Costo Total de la Reserva: $" + r.calcularCosto());
+        System.out.println("==========================================\n");
+    }
+
+/*
+    private static void registrarReserva() throws AccesoDatosException, ElementoNoEncontradoException,
+            TurnoNoDisponibleException, CanchaBloqueadaException, MenorSinResponsableException {
         if (recepcionista == null) {
             System.out.println("Primero cargá los datos (opción 1).");
             return;
@@ -379,7 +480,7 @@ public class App {
         }
         System.out.println("  Total: $" + r.calcularCosto());
     }
-
+*/
     private static void agregarExtras(Reserva reserva) {
         int opcion;
         do {
