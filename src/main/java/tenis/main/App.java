@@ -231,33 +231,102 @@ public class App {
 
     private static void altaJugador() throws AccesoDatosException, ElementoNoEncontradoException,
             MenorSinResponsableException {
-        String nombre = leerTexto("Nombre y apellido: ");
-        String dni = leerTexto("DNI: ");
-        for (Jugador j : gestorJugador.listarTodos()) {
-            if (j.getDni().equals(dni)) {
-                throw new DatosInvalidosException("Ya existe un jugador con DNI " + dni);
+
+        // 1. Nombre y apellido (reintenta hasta que sea válido)
+        String nombre;
+        while (true) {
+            nombre = leerTexto("Nombre y apellido: ");
+            if (nombre.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s']+$")) {
+                break;
+            }
+            System.out.println("Error: El nombre solo debe contener letras, espacios y apóstrofes. Intente nuevamente.");
+        }
+
+        // 2. DNI (reintenta por formato o si ya existe)
+        String dni;
+        while (true) {
+            dni = leerTexto("DNI: ");
+            if (!dni.matches("^\\d{7,8}$")) {
+                System.out.println("Error: El DNI debe ser un número entero de 7 u 8 dígitos. Intente nuevamente.");
+                continue;
+            }
+
+            // Verificar si ya existe el DNI en el sistema
+            boolean dniExiste = false;
+            for (Jugador j : gestorJugador.listarTodos()) {
+                if (j.getDni().equals(dni)) {
+                    dniExiste = true;
+                    break;
+                }
+            }
+
+            if (dniExiste) {
+                System.out.println("Error: Ya existe un jugador registrado con el DNI " + dni + ". Ingrese otro.");
+            } else {
+                break; // DNI válido y no duplicado
             }
         }
-        LocalDate nacimiento = leerFecha("Fecha de nacimiento (AAAA-MM-DD): ");
-        if (nacimiento.isAfter(LocalDate.now())) {
-            throw new DatosInvalidosException("La fecha de nacimiento no puede ser futura");
+
+        // 3. Fecha de nacimiento (reintenta si es una fecha futura)
+        LocalDate nacimiento;
+        while (true) {
+            nacimiento = leerFecha("Fecha de nacimiento (AAAA-MM-DD): ");
+            if (!nacimiento.isAfter(LocalDate.now())) {
+                break;
+            }
+            System.out.println("Error: La fecha de nacimiento no puede ser futura. Intente nuevamente.");
         }
-        String domicilio = leerTexto("Domicilio: ");
-        String telefono = leerTexto("Teléfono: ");
-        String email = leerTexto("Email: ");
+
+        // 4. Domicilio (reintenta si contiene caracteres no permitidos)
+        String domicilio;
+        while (true) {
+            domicilio = leerTexto("Domicilio: ");
+            if (domicilio.matches("^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\\s°]+$")) {
+                break;
+            }
+            System.out.println("Error: El domicilio solo puede contener letras y números. Intente nuevamente.");
+        }
+
+        // 5. Teléfono (reintenta si contiene letras o símbolos)
+        String telefono;
+        while (true) {
+            telefono = leerTexto("Teléfono: ");
+            if (telefono.matches("^\\d+$")) {
+                break;
+            }
+            System.out.println("Error: El teléfono solo debe contener números. Intente nuevamente.");
+        }
+
+        // 6. Email (reintenta hasta que cumpla estrictamente el formato)
+        String email;
+        while (true) {
+            email = leerTexto("Email: ");
+            if (email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.com$")) {
+                break;
+            }
+            System.out.println("Error: El email no es válido (debe contener '@' y finalizar en '.com'). Intente nuevamente.");
+        }
+
         boolean esSocio = leerEntero("¿Es socio? 1 = Sí, 2 = No: ") == 1;
         Nivel nivel = leerNivel();
         Categoria categoria = leerCategoria();
 
         Jugador nuevo;
         boolean esMenor = Period.between(nacimiento, LocalDate.now()).getYears() < 18;
+
         if (esMenor) {
             System.out.println("El jugador es menor de edad: hay que asignarle un responsable.");
             listarJugadores();
+
+            // Opcional: También puedes proteger la selección del responsable con un while si lo deseas
             Jugador responsable = gestorJugador.buscar(leerEntero("Id del responsable: "));
-            if (responsable.esMenor()) {
-                throw new MenorSinResponsableException("El responsable debe ser mayor de edad");
+            if (responsable == null) {
+                throw new ElementoNoEncontradoException("No se encontró el responsable con el ID indicado.");
             }
+            if (responsable.esMenor()) {
+                throw new MenorSinResponsableException("El responsable asignado debe ser mayor de edad.");
+            }
+
             nuevo = new Jugador(nombre, dni, nacimiento, domicilio, telefono, email,
                     esSocio, nivel, categoria, responsable);
         } else {
@@ -268,7 +337,7 @@ public class App {
         }
 
         gestorJugador.guardar(nuevo);
-        System.out.println("Jugador registrado: " + nuevo);
+        System.out.println("Jugador registrado con éxito: " + nuevo);
     }
 
     private static void listarJugadores() throws AccesoDatosException {
