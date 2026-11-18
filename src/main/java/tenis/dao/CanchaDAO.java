@@ -5,6 +5,7 @@ import tenis.enums.Superficie;
 import tenis.excepciones.AccesoDatosException;
 import tenis.excepciones.ElementoNoEncontradoException;
 import tenis.interfaces.DAO;
+import tenis.modelo.Bloqueo;
 import tenis.modelo.Cancha;
 import tenis.modelo.Club;
 
@@ -14,13 +15,14 @@ import java.util.List;
 
 /**
  * Acceso a datos de las canchas, sobre la tabla {@code canchas}.
- * Cada cancha guarda el id de su club; al leerla, el club se carga con {@link ClubDAO}.
- * Los bloqueos de una cancha se manejan en memoria y no se guardan.
+ * Cada cancha guarda el id de su club; al leerla, el club se carga con {@link ClubDAO}
+ * y sus bloqueos con {@link BloqueoDAO}.
  */
 
 public class CanchaDAO implements DAO<Cancha> {
 
     private final ClubDAO clubDAO = new ClubDAO();
+    private final BloqueoDAO bloqueoDAO = new BloqueoDAO();
 
     private static final String SQL_INSERTAR = "INSERT INTO canchas (numero, superficie, tiene_luz, club_id) VALUES (?, ?, ?, ?)";
     private static final String SQL_LISTAR = "SELECT * FROM canchas ORDER BY numero";
@@ -91,8 +93,8 @@ public class CanchaDAO implements DAO<Cancha> {
             ps.setInt(1, c.getNumero());
             ps.setString(2, c.getSuperficie().name());
             ps.setBoolean(3, c.isTieneLuz());
-            ps.setInt(4, c.getClub().getId()); // <- Agregado
-            ps.setInt(5, c.getId());           // <- ID pasa a ser el parámetro 5
+            ps.setInt(4, c.getClub().getId());
+            ps.setInt(5, c.getId());
             filas = ps.executeUpdate();
         } catch (SQLException e) {
             throw new AccesoDatosException("Error al actualizar la cancha ID: " + c.getId(), e);
@@ -118,11 +120,12 @@ public class CanchaDAO implements DAO<Cancha> {
     }
 
     /**
-     * Arma una cancha a partir de la fila actual del resultado y le carga su club.
+     * Arma una cancha a partir de la fila actual del resultado y le carga su club
+     * y sus bloqueos.
      *
      * @param rs resultado posicionado en la fila a leer
      * @return la cancha reconstruida, con su club
-     * @throws SQLException si falla la lectura o no se puede cargar el club
+     * @throws SQLException si falla la lectura o no se puede cargar el club o los bloqueos
      */
 
     private Cancha crearCancha(ResultSet rs) throws SQLException {
@@ -139,6 +142,14 @@ public class CanchaDAO implements DAO<Cancha> {
             throw new SQLException("Error al asociar el Club en la cancha ID: " + id, e);
         }
 
-        return new Cancha(id, numero, superficie, tieneLuz, club);
+        Cancha cancha = new Cancha(id, numero, superficie, tieneLuz, club);
+        try {
+            for (Bloqueo bloqueo : bloqueoDAO.listarPorCancha(id)) {
+                cancha.agregarBloqueo(bloqueo);
+            }
+        } catch (AccesoDatosException e) {
+            throw new SQLException("Error al cargar los bloqueos de la cancha ID: " + id, e);
+        }
+        return cancha;
     }
 }
