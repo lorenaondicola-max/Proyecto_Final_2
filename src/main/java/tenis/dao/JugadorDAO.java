@@ -2,6 +2,7 @@ package tenis.dao;
 
 
 import tenis.config.ConexionDB;
+import tenis.enums.Categoria;
 import tenis.enums.Nivel;
 import tenis.excepciones.AccesoDatosException;
 import tenis.excepciones.ElementoNoEncontradoException;
@@ -44,7 +45,7 @@ public class JugadorDAO implements DAO<Jugador> {
             ps.setString(8, j.getPasswordHash());
             ps.setBoolean(9, j.isEsSocio());
             ps.setString(10, j.getNivel().name());
-            ps.setString(11, j.getCategoria());
+            ps.setString(11, j.getCategoria().name());
 
             if (j.getResponsable() != null) {
                 ps.setInt(12, j.getResponsable().getId());
@@ -111,7 +112,7 @@ public class JugadorDAO implements DAO<Jugador> {
             ps.setString(8, j.getPasswordHash());
             ps.setBoolean(9, j.isEsSocio());
             ps.setString(10, j.getNivel().name());
-            ps.setString(11, j.getCategoria());
+            ps.setString(11, j.getCategoria().name());
 
             if (j.getResponsable() != null) {
                 ps.setInt(12, j.getResponsable().getId());
@@ -167,7 +168,7 @@ public class JugadorDAO implements DAO<Jugador> {
         String passwordHash = rs.getString("password_hash");
         boolean esSocio = rs.getBoolean("es_socio");
         Nivel nivel = Nivel.valueOf(rs.getString("nivel"));
-        String categoria = rs.getString("categoria");
+        Categoria categoria = Categoria.valueOf(rs.getString("categoria"));
 
         int responsableId = rs.getInt("responsable_id");
 

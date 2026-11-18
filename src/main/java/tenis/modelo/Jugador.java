@@ -1,5 +1,6 @@
 package tenis.modelo;
 
+import tenis.enums.Categoria;
 import tenis.enums.Nivel;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ import java.util.List;
 public class Jugador extends Usuario {
     private boolean esSocio;
     private Nivel nivel;
-    private String categoria;
+    private Categoria categoria;
     private int cancelacionesTardias;
     private Jugador responsable; // Obligatorio si es menor de 18 años
     private ArrayList<Reserva> historial;
@@ -30,7 +31,7 @@ public class Jugador extends Usuario {
      */
     public Jugador(int id, String nombre, String dni, LocalDate fechaNacimiento,
                    String domicilio, String telefono, String email, String username,
-                   String passwordHash, boolean esSocio, Nivel nivel, String categoria) {
+                   String passwordHash, boolean esSocio, Nivel nivel, Categoria categoria) {
         super(id, nombre, dni, fechaNacimiento, domicilio, telefono, email, username, passwordHash);
         this.esSocio = esSocio;
         this.nivel = nivel;
@@ -47,7 +48,7 @@ public class Jugador extends Usuario {
      */
     public Jugador(int id, String nombre, String dni, LocalDate fechaNacimiento,
                    String domicilio, String telefono, String email,
-                   boolean esSocio, Nivel nivel, String categoria, Jugador responsable) {
+                   boolean esSocio, Nivel nivel, Categoria categoria, Jugador responsable) {
         super(id, nombre, dni, fechaNacimiento, domicilio, telefono, email, null, null);
         this.esSocio = esSocio;
         this.nivel = nivel;
@@ -62,7 +63,7 @@ public class Jugador extends Usuario {
      */
     public Jugador(String nombre, String dni, LocalDate fechaNacimiento,
                    String domicilio, String telefono, String email, String username,
-                   String passwordHash, boolean esSocio, Nivel nivel, String categoria) {
+                   String passwordHash, boolean esSocio, Nivel nivel, Categoria categoria) {
         this(0, nombre, dni, fechaNacimiento, domicilio, telefono, email, username, passwordHash, esSocio, nivel, categoria);
     }
 
@@ -71,7 +72,7 @@ public class Jugador extends Usuario {
      */
     public Jugador(String nombre, String dni, LocalDate fechaNacimiento,
                    String domicilio, String telefono, String email,
-                   boolean esSocio, Nivel nivel, String categoria, Jugador responsable) {
+                   boolean esSocio, Nivel nivel, Categoria categoria, Jugador responsable) {
         this(0, nombre, dni, fechaNacimiento, domicilio, telefono, email, esSocio, nivel, categoria, responsable);
     }
 
@@ -111,8 +112,8 @@ public class Jugador extends Usuario {
     public Nivel getNivel() { return nivel; }
     public void setNivel(Nivel nivel) { this.nivel = nivel; }
 
-    public String getCategoria() { return categoria; }
-    public void setCategoria(String categoria) { this.categoria = categoria; }
+    public Categoria getCategoria() { return categoria; }
+    public void setCategoria(Categoria categoria) { this.categoria = categoria; }
 
     public int getCancelacionesTardias() { return cancelacionesTardias; }
     public void setCancelacionesTardias(int cancelacionesTardias) { this.cancelacionesTardias = cancelacionesTardias; }
@@ -125,7 +126,7 @@ public class Jugador extends Usuario {
 
     @Override
     public String toString() {
-        return "Jugador id " + id + ": " + nombre + ", DNI " + dni + ", nivel " + nivel
+        return "Jugador id " + id + ": " + nombre + ", DNI " + dni + ", nivel " + nivel + ", categoria " + categoria
                 + (esMenor() && responsable != null ? " (menor, responsable: " + responsable.getNombre() + ")" : "");
     }
 }

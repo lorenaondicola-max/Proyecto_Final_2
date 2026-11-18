@@ -1,5 +1,6 @@
 package tenis.main;
 
+import tenis.enums.Categoria;
 import tenis.enums.Nivel;
 import tenis.enums.Superficie;
 import tenis.enums.TipoJuego;
@@ -146,7 +147,7 @@ public class App {
                 "hash123",
                 true,
                 Nivel.AVANZADO,
-                "Primera"
+                Categoria.PRIMERA
         );
         gestorJugador.guardar(adulto);
         System.out.println("Jugador adulto guardado: " + adulto.getNombre());
@@ -161,7 +162,7 @@ public class App {
                 "lucas@email.com",
                 false,
                 Nivel.INTERMEDIO,
-                "Juvenil",
+                Categoria.CUARTA,
                 adulto
         );
         gestorJugador.guardar(menor);
@@ -177,7 +178,7 @@ public class App {
                 "pass1234",
                 false,
                 Nivel.PRINCIPIANTE,
-                "Segunda"
+                Categoria.TERCERA
         );
         gestorJugador.guardar(adulto2);
         System.out.println("Jugador adulto guardado: " + adulto2.getNombre());
@@ -246,7 +247,7 @@ public class App {
         String email = leerTexto("Email: ");
         boolean esSocio = leerEntero("¿Es socio? 1 = Sí, 2 = No: ") == 1;
         Nivel nivel = leerNivel();
-        String categoria = leerTexto("Categoría: ");
+        Categoria categoria = leerCategoria();
 
         Jugador nuevo;
         boolean esMenor = Period.between(nacimiento, LocalDate.now()).getYears() < 18;
@@ -411,6 +412,18 @@ public class App {
             throw new DatosInvalidosException("Nivel inexistente: " + n);
         }
         return niveles[n - 1];
+    }
+
+    private static Categoria leerCategoria(){
+        Categoria[] categorias = Categoria.values();
+        for (int i = 0; i < categorias.length; i++) {
+            System.out.println((i + 1) + ". " + categorias[i]);
+        }
+        int n = leerEntero("Categoria: ");
+        if (n < 1 || n > categorias.length) {
+            throw new DatosInvalidosException("Categoria inexistente: " + n);
+        }
+        return categorias[n - 1];
     }
 
     private static int leerCantidad(String mensaje) {
