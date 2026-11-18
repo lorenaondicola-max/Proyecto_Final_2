@@ -5,6 +5,7 @@ import tenis.enums.Superficie;
 import tenis.enums.TipoJuego;
 import tenis.excepciones.DatosInvalidosException;
 import tenis.interfaces.Cancelable;
+import tenis.interfaces.Identificable;
 import tenis.interfaces.Tarifable;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
  * reserva: para un adulto son la misma persona; para un menor, el titular es su responsable.
  * Puede tener extras asociados, y sabe calcular su costo y cancelarse.
  */
-public class Reserva implements Cancelable, Tarifable {
+public class Reserva implements Cancelable, Tarifable, Identificable {
     private int id;
     private Cancha cancha;
     private Jugador jugador;
@@ -196,6 +197,7 @@ public class Reserva implements Cancelable, Tarifable {
     @Override
     public String toString() {
         String texto = "Reserva id " + id + ": cancha " + cancha.getNumero()
+                + " de " + cancha.getClub().getNombre()
                 + ", jugador " + jugador.getNombre()
                 + ", de " + inicio + " a " + fin + ", " + estado;
         if (titular != null && titular.getId() != jugador.getId()) {

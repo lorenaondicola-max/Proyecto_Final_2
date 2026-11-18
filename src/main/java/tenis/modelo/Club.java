@@ -1,15 +1,20 @@
 package tenis.modelo;
 
+import tenis.interfaces.Identificable;
+
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Establecimiento que agrupa canchas y define sus reglas de funcionamiento:
  * días y horario de atención, franja de hora pico, tarifa y política de cancelación.
  */
-public class Club {
+public class Club implements Identificable {
     private int id;
     private String nombre;
     private String direccion;
@@ -117,6 +122,32 @@ public class Club {
     }
 
     /**
+     * @return los días de atención en castellano, separados por coma (por ejemplo "lunes, martes")
+     */
+    public String diasAtencionTexto() {
+            List<String> nombres = new ArrayList<>();
+            for (DayOfWeek dia : this.diasAtencion) {
+                nombres.add(dia.getDisplayName(TextStyle.FULL, Locale.forLanguageTag("es")));
+            }
+            return String.join(", ", nombres);
+    }
+
+    /**
+     * Indica si el club atiende durante todo un turno, y no solo al empezar.
+     * El turno tiene que empezar y terminar el mismo día, en un día de atención,
+     * sin empezar antes de la apertura ni terminar después del cierre.
+     *
+     * @param inicio comienzo del turno
+     * @param fin final del turno
+     * @return true si el club está abierto durante todo el turno
+     */
+    public boolean admiteTurno(LocalDateTime inicio, LocalDateTime fin) {
+            return estaAbierto(inicio)
+                    && fin.toLocalDate().equals(inicio.toLocalDate())
+                    && !fin.toLocalTime().isAfter(this.horaCierre);
+    }
+
+    /**
      * Indica si un turno empieza dentro de la franja de hora pico.
      * Solo se mira la hora de inicio del turno, con ambos extremos de la franja incluidos.
      *
@@ -164,4 +195,10 @@ public class Club {
 
     public Tarifa getTarifa() { return tarifa; }
     public void setTarifa(Tarifa tarifa) { this.tarifa = tarifa; }
+
+    @Override
+    public String toString() {
+        return "Club id " + id + ": " + nombre + " (" + direccion + "), de "
+                + horaApertura + " a " + horaCierre;
+    }
 }

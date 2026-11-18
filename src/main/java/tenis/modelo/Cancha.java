@@ -4,6 +4,7 @@ import tenis.enums.Superficie;
 import tenis.excepciones.ElementoNoEncontradoException;
 import tenis.excepciones.DatosInvalidosException;
 import tenis.gestor.Repositorio;
+import tenis.interfaces.Identificable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.List;
  * Espacio de juego de un club, con un tipo de superficie y, opcionalmente, iluminación.
  * Guarda los bloqueos que impiden reservarla en ciertos períodos.
  */
-public class Cancha {
+public class Cancha implements Identificable {
     private int id;
     private int numero;
     private Superficie superficie;
@@ -43,12 +44,23 @@ public class Cancha {
      * @return true si al menos un bloqueo se superpone con ese período
      */
     public boolean estaBloqueada(LocalDateTime desde, LocalDateTime hasta) {
+        return bloqueoEn(desde, hasta) != null;
+    }
+
+    /**
+     * Busca el bloqueo que impide usar la cancha en un período, para poder informar su motivo.
+     *
+     * @param desde inicio del período a consultar
+     * @param hasta fin del período a consultar
+     * @return el primer bloqueo que se superpone con ese período, o null si no hay ninguno
+     */
+    public Bloqueo bloqueoEn(LocalDateTime desde, LocalDateTime hasta) {
         for (Bloqueo bloqueo : this.bloqueos.listar()) {
             if (bloqueo.seSuperpone(desde, hasta)) {
-                return true; // Se encontró al menos un bloqueo que se superpone
+                return bloqueo;
             }
         }
-        return false;
+        return null;
     }
 
     /**

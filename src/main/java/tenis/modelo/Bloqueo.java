@@ -86,4 +86,10 @@ public class Bloqueo implements Identificable {
     public void setDetalle(String detalle) {
         this.detalle = detalle;
     }
+
+    @Override
+    public String toString() {
+        return "Bloqueo id " + id + ": " + motivo + ", de " + desde + " a " + hasta
+                + (detalle != null && !detalle.isBlank() ? " (" + detalle + ")" : "");
+    }
 }
