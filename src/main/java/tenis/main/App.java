@@ -450,37 +450,7 @@ public class App {
         System.out.println("  Costo Total de la Reserva: $" + r.calcularCosto());
         System.out.println("==========================================\n");
     }
-
-/*
-    private static void registrarReserva() throws AccesoDatosException, ElementoNoEncontradoException,
-            TurnoNoDisponibleException, CanchaBloqueadaException, MenorSinResponsableException {
-        if (recepcionista == null) {
-            System.out.println("Primero cargá los datos (opción 1).");
-            return;
-        }
-        listarCanchas();
-        Cancha cancha = gestorCancha.buscar(leerEntero("Id de cancha: "));
-        listarJugadores();
-        Jugador jugador = gestorJugador.buscar(leerEntero("Id de jugador: "));
-        LocalDate fecha = leerFecha("Fecha (AAAA-MM-DD): ");
-        LocalTime hora = leerHora("Hora de inicio (HH:MM): ");
-        int horas = leerEntero("Duración en horas: ");
-        TipoJuego tipo = TipoJuego.SINGLES;
-        if (leerEntero("1 = Singles, 2 = Dobles: ") == 2) {
-            tipo = TipoJuego.DOBLES;
-        }
-
-        LocalDateTime inicio = LocalDateTime.of(fecha, hora);
-        Reserva r = recepcionista.registrarReserva(cancha, jugador, inicio, inicio.plusHours(horas), tipo);
-        agregarExtras(r);
-        gestorReserva.guardarEnBD(r);
-        System.out.println("Reserva " + r.getId() + " registrada.");
-        for (Extra extra : r.getExtras()) {
-            System.out.println("  " + extra.getTipo() + ": $" + extra.calcularCosto());
-        }
-        System.out.println("  Total: $" + r.calcularCosto());
-    }
-*/
+    
     private static void agregarExtras(Reserva reserva) {
         int opcion;
         do {
