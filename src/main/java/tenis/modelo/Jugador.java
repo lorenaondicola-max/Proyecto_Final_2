@@ -92,6 +92,32 @@ public class Jugador extends Usuario {
      * Suma una cancelación tardía al jugador.
      * La llama la reserva cuando su titular cancela con menos anticipación que la exigida.
      */
+    /**
+     * Indica si este jugador es el responsable de otro.
+     *
+     * @param otro jugador a consultar
+     * @return true si el otro jugador tiene a este como responsable
+     */
+    public boolean esResponsableDe(Jugador otro) {
+        return otro.getResponsable() != null && otro.getResponsable().getId() == this.id;
+    }
+
+    /**
+     * @return true si el turno es del propio jugador o de un menor a su cargo
+     */
+    @Override
+    public boolean puedeGestionarReserva(Cancha cancha, Jugador jugador) {
+        return jugador.getId() == this.id || esResponsableDe(jugador);
+    }
+
+    /**
+     * @return siempre false: un jugador no administra canchas
+     */
+    @Override
+    public boolean puedeGestionarCancha(Cancha cancha) {
+        return false;
+    }
+
     public void marcarCancelacionTardia() {
         this.cancelacionesTardias++;
     }

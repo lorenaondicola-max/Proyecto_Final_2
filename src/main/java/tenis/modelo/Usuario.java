@@ -1,5 +1,7 @@
 package tenis.modelo;
 
+import tenis.interfaces.Identificable;
+
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
@@ -11,7 +13,7 @@ import java.util.List;
  * subclase a definir sus propios permisos.
  * Es abstracta porque no existe un usuario "a secas": siempre es de alguno de esos tres tipos.
  */
-public abstract class Usuario {
+public abstract class Usuario implements Identificable {
     protected int id;
     protected String nombre;
     protected String dni;
@@ -58,6 +60,26 @@ public abstract class Usuario {
      * @return lista con los nombres de los permisos; vacía si no tiene acceso al sistema
      */
     public abstract List<String> getPermisos();
+
+    /**
+     * Indica si este usuario puede reservar o cancelar un turno de ese jugador en esa cancha.
+     * Cada subclase lo responde según su rol: el jugador solo para sí mismo y los menores
+     * a su cargo, el recepcionista solo en las canchas de su club, y el administrador siempre.
+     *
+     * @param cancha cancha del turno
+     * @param jugador jugador del turno
+     * @return true si tiene permiso
+     */
+    public abstract boolean puedeGestionarReserva(Cancha cancha, Jugador jugador);
+
+    /**
+     * Indica si este usuario puede administrar una cancha: bloquearla, desbloquearla
+     * o marcar como completadas sus reservas.
+     *
+     * @param cancha cancha a administrar
+     * @return true si tiene permiso
+     */
+    public abstract boolean puedeGestionarCancha(Cancha cancha);
 
     /**
      * Indica si el usuario tiene menos de 18 años a la fecha de hoy.

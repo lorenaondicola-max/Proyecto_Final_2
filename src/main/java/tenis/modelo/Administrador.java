@@ -103,4 +103,25 @@ public class Administrador extends Usuario {
                 throw new DatosInvalidosException("Tipo de usuario desconocido: " + tipoUsuario);
         }
     }
+
+    /**
+     * @return siempre true: el administrador puede operar sobre cualquier reserva
+     */
+    @Override
+    public boolean puedeGestionarReserva(Cancha cancha, Jugador jugador) {
+        return true;
+    }
+
+    /**
+     * @return siempre true: el administrador puede operar sobre cualquier cancha
+     */
+    @Override
+    public boolean puedeGestionarCancha(Cancha cancha) {
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "Administrador id " + id + ": " + nombre;
+    }
 }
