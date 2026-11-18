@@ -146,7 +146,7 @@ public class App {
                 "hash123",
                 true,
                 Nivel.AVANZADO,
-                "Singles A"
+                "Primera"
         );
         gestorJugador.guardar(adulto);
         System.out.println("Jugador adulto guardado: " + adulto.getNombre());
@@ -177,7 +177,7 @@ public class App {
                 "pass1234",
                 false,
                 Nivel.PRINCIPIANTE,
-                "Singles A"
+                "Segunda"
         );
         gestorJugador.guardar(adulto2);
         System.out.println("Jugador adulto guardado: " + adulto2.getNombre());
