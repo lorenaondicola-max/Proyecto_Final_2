@@ -1,9 +1,6 @@
 package tenis.main;
 
-import tenis.enums.Categoria;
-import tenis.enums.Nivel;
-import tenis.enums.Superficie;
-import tenis.enums.TipoJuego;
+import tenis.enums.*;
 import tenis.excepciones.*;
 import tenis.gestor.GestorCanchas;
 import tenis.gestor.GestorClub;
@@ -56,6 +53,9 @@ public class App {
                         listarReservas();
                         break;
                     case 7:
+                        completarReserva();
+                        break;
+                    case 8:
                         cancelarReserva();
                         break;
                     case 0:
@@ -84,7 +84,8 @@ public class App {
         System.out.println("4. Listar jugadores");
         System.out.println("5. Registrar reserva");
         System.out.println("6. Listar reservas");
-        System.out.println("7. Cancelar reserva");
+        System.out.println("7. Marcar reserva como Completada");
+        System.out.println("8. Cancelar reserva");
         System.out.println("0. Salir");
     }
 
@@ -450,7 +451,7 @@ public class App {
         System.out.println("  Costo Total de la Reserva: $" + r.calcularCosto());
         System.out.println("==========================================\n");
     }
-    
+
     private static void agregarExtras(Reserva reserva) {
         int opcion;
         do {
@@ -496,6 +497,43 @@ public class App {
         } else {
             System.out.println("Cancelación tardía. Cargo: $" + cargo);
         }
+    }
+
+    private static void completarReserva() throws AccesoDatosException, ElementoNoEncontradoException {
+
+        listarReservas();
+
+        Reserva reserva;
+        while (true) {
+            int idReserva = leerEntero("Ingrese el ID de la reserva a completar: ");
+
+            reserva = gestorReserva.buscarEnBD(idReserva);
+
+            if (reserva != null) {
+                break;
+            }
+            System.out.println("Error: No se encontró una reserva con el ID " + idReserva + ". Intente nuevamente.");
+        }
+
+        // Validar si ya está completada o cancelada
+
+        if (reserva.getEstado() == EstadoReserva.CANCELADA) {
+            System.out.println("Operación rechazada: No se puede completar una reserva que se encuentra CANCELADA.");
+            return;
+        }
+
+        if (reserva.getEstado() == EstadoReserva.COMPLETADA) {
+            System.out.println("Esta reserva ya se encuentra completada.");
+            return;
+        }
+
+        // Cambiar el estado
+        reserva.setEstado(EstadoReserva.COMPLETADA);
+
+        // Actualizar en la base de datos o gestor
+        gestorReserva.actualizarEnBD(reserva);
+
+        System.out.println("¡La reserva #" + reserva.getId() + " ha sido actualizada a estado: COMPLETADA!");
     }
 
     private static int leerEntero(String mensaje) {
